@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Controllers\Controller;
@@ -32,7 +32,8 @@ class AuthenticatedController extends Controller
 
         return response()->json(
             [
-                'token' => $this->bearTokenPrefix . $user->createToken($this->tokenName)->plainTextToken
+                'token' => $this->bearTokenPrefix . $user->createToken($this->tokenName)->plainTextToken,
+                'user' => $user
             ],
             Response::HTTP_OK
         );

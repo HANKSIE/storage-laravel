@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Auth\AuthenticatedController;
 use App\Http\Controllers\Api\TeamFileManagerController;
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +15,10 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+Route::post('login', [AuthenticatedController::class, 'login']);
+Route::get('logout', [AuthenticatedController::class, 'logout'])->middleware('auth:sanctum');
+Route::post('register', [AuthenticatedController::class, 'register']);
 
 Route::middleware('auth:sanctum')->group(function () {
 

@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthenticatedController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,7 +16,3 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return 'start success';
 });
-
-Route::post('login', [AuthenticatedController::class, 'login']);
-Route::get('logout', [AuthenticatedController::class, 'logout'])->middleware('auth:sanctum');
-Route::post('register', [AuthenticatedController::class, 'register']);
