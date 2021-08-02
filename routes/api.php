@@ -1,8 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthenticatedController;
-use App\Http\Controllers\Api\TeamFileManagerController;
-
+use App\Http\Controllers\Api\FileManager\UserFileManagerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,14 +26,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('user')->group(function () {
         Route::prefix('{user}')->group(function () {
             Route::prefix('files')->group(function () {
-                Route::post('', [TeamFileManagerController::class, 'list']);
-                Route::post('mkdir', [TeamFileManagerController::class, 'mkdir']);
-                Route::delete('remove', [TeamFileManagerController::class, 'remove']);
-                Route::put('rename', [TeamFileManagerController::class, 'rename']);
-                Route::post('download', [TeamFileManagerController::class, 'download']);
-                Route::put('move', [TeamFileManagerController::class, 'move']);
-                Route::post('copy', [TeamFileManagerController::class, 'copy']);
-                Route::post('upload', [TeamFileManagerController::class, 'upload']);
+                Route::post('', [UserFileManagerController::class, 'list']);
+                Route::post('mkdir', [UserFileManagerController::class, 'mkdir']);
+                Route::delete('remove', [UserFileManagerController::class, 'remove']);
+                Route::put('rename', [UserFileManagerController::class, 'rename']);
+                Route::post('download', [UserFileManagerController::class, 'download']);
+                Route::put('move', [UserFileManagerController::class, 'move']);
+                Route::post('copy', [UserFileManagerController::class, 'copy']);
+                Route::post('upload', [UserFileManagerController::class, 'upload']);
             });
         });
     });

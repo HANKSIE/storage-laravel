@@ -6,6 +6,17 @@ use Illuminate\Support\Str;
 
 class PathHelper
 {
+    public static function extension($path)
+    {
+        $ext = pathinfo($path, PATHINFO_EXTENSION);
+        return $ext;
+    }
+
+    public static function dirname($path)
+    {
+        return dirname($path);
+    }
+
     public static function basename($path)
     {
         if (Str::of($path)->contains('/')) {
@@ -15,14 +26,16 @@ class PathHelper
         }
     }
 
-    public static function pathRoot($path)
+    public static function rootItem($path)
     {
-        $path = Str::of(self::pathFormat($path));
+        $path = Str::of(self::format($path));
         if (!$path->contains('/')) {
             return '';
         }
 
-        if (((string)$path)[0] === '/') {
+        $firstCh = ((string)$path)[0];
+
+        if ($firstCh === '/') {
             $path = $path->after('/');
         }
 
@@ -30,31 +43,31 @@ class PathHelper
     }
 
     // 反斜線/連續反斜線/連續斜線 => 單個斜線
-    public static function pathFormat($path)
+    public static function format($path)
     {
         $path = preg_replace('/\\\\+/', '/', $path);
         $path = preg_replace('/\/+/', '/', $path);
         return $path;
     }
 
-    public static function concatPath()
+    public static function concat(...$args)
     {
-        $args = collect(func_get_args());
+        $args = collect($args);
         $result = Str::of($args->shift());
         $args->each(function ($path) use (&$result) {
             $result = $result->append('/', $path);
         });
-        return self::pathFormat((string) $result);
+        return self::format((string) $result);
     }
 
-    public static function isEqual()
+    public static function equal(...$args)
     {
         $isEqual = false;
-        $paths = collect(func_get_args());
-        $first = self::pathFormat($paths->shift());
+        $paths = collect($args);
+        $first = self::format($paths->shift());
 
         $paths->each(function ($path) use (&$isEqual, $first) {
-            $path = self::pathFormat($path);
+            $path = self::format($path);
             $isEqual = dirname($first) === dirname($path) && basename($first) === basename($path);
         });
 
