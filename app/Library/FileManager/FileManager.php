@@ -3,8 +3,10 @@
 namespace App\Library\FileManager;
 
 use App\Contracts\FileManager as ContractsFileManager;
+use App\Library\FileManager\Features\Copy;
 use App\Library\FileManager\Features\ListDirectory;
 use App\Library\FileManager\Features\MakeDirectory;
+use App\Library\FileManager\Features\Move;
 use App\Library\FileManager\Features\Remove;
 
 class FileManager extends ContractsFileManager
@@ -14,11 +16,15 @@ class FileManager extends ContractsFileManager
     public function __construct(
         ListDirectory $ListDirectory,
         MakeDirectory $MakeDirectory,
-        Remove $Remove
+        Remove $Remove,
+        Move $Move,
+        Copy $Copy
     ) {
         $this->features['list'] = $ListDirectory;
         $this->features['mkdir'] = $MakeDirectory;
         $this->features['remove'] = $Remove;
+        $this->features['move'] = $Move;
+        $this->features['copy'] = $Copy;
     }
 
     public function list($dir)
@@ -38,6 +44,7 @@ class FileManager extends ContractsFileManager
 
     public function move($fromDir, $toDir, $filenames)
     {
+        return $this->features['move']($fromDir, $toDir, $filenames);
     }
 
     public function moveKeepBoth($fromDir, $toDir, $filenames)
@@ -50,6 +57,7 @@ class FileManager extends ContractsFileManager
 
     public function copy($fromDir, $toDir, $filenames)
     {
+        return $this->features['copy']($fromDir, $toDir, $filenames);
     }
 
     public function copyKeepBoth($fromDir, $toDir, $filenames)

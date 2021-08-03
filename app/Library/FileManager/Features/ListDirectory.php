@@ -4,7 +4,6 @@ namespace App\Library\FileManager\Features;
 
 use App\Helpers\PathHelper;
 use App\Library\FileManager\Features\Contracts\Feature;
-use App\Library\FileManager\Types\Results\FileInfosResult;
 
 class ListDirectory extends Feature
 {
@@ -38,10 +37,9 @@ class ListDirectory extends Feature
 
         $fileInfos = $this->Helper->fileInfo($items);
 
-        return FileInfosResult::make(
+        return
             [
                 'fileInfos' => $fileInfos,
-            ]
-        );
+            ];
     }
 }

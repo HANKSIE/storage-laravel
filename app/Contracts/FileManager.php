@@ -2,20 +2,13 @@
 
 namespace App\Contracts;
 
-use App\Library\FileManager\Types\FileInfo;
-use App\Library\FileManager\Types\Results\CopyResult;
-use App\Library\FileManager\Types\Results\FileInfoResult;
-use App\Library\FileManager\Types\Results\FileInfosResult;
-use App\Library\FileManager\Types\Results\MoveResult;
-use App\Library\FileManager\Types\Results\UploadResult;
-
 abstract class FileManager
 {
     /**
      *
      * @param string $dir
      * 
-     * @return FileInfosResult
+     * @return array
      */
     abstract public function list($dir);
 
@@ -24,7 +17,7 @@ abstract class FileManager
      * @param string $dir
      * @param string $filename
      * 
-     * @return FileInfosResult
+     * @return array
      */
     abstract public function makeDirectory($dir, $filename);
 
@@ -33,7 +26,7 @@ abstract class FileManager
      * @param string $dir
      * @param string[] $filenames
      * 
-     * @return FileInfosResult - 刪除成功的檔案名稱
+     * @return array - 刪除成功的檔案名稱
      */
     abstract public function remove($dir, $filenames);
 
@@ -42,7 +35,7 @@ abstract class FileManager
      * @param string $fromDir
      * @param string $toDir
      * @param string[] $filenames
-     * @return MoveResult
+     * @return array
      */
     abstract public function move($fromDir, $toDir, $filenames);
 
@@ -51,7 +44,7 @@ abstract class FileManager
      * @param string $fromDir
      * @param string $toDir
      * @param string[] $filenames
-     * @return FileInfosResult
+     * @return array
      */
     abstract public function moveKeepBoth($fromDir, $toDir, $filenames);
 
@@ -60,7 +53,7 @@ abstract class FileManager
      * @param string $fromDir
      * @param string $toDir
      * @param string[] $filenames
-     * @return FileInfosResult
+     * @return array
      */
     abstract public function moveReplace($fromDir, $toDir, $filenames);
 
@@ -69,7 +62,7 @@ abstract class FileManager
      * @param string $fromDir
      * @param string $toDir
      * @param string[] $filenames
-     * @return CopyResult
+     * @return array
      */
     abstract public function copy($fromDir, $toDir, $filenames);
 
@@ -78,7 +71,7 @@ abstract class FileManager
      * @param string $fromDir
      * @param string $toDir
      * @param string[] $filenames
-     * @return FileInfosResult
+     * @return array
      */
     abstract public function copyKeepBoth($fromDir, $toDir, $filenames);
 
@@ -87,7 +80,7 @@ abstract class FileManager
      * @param string $fromDir
      * @param string $toDir
      * @param string[] $filenames
-     * @return FileInfosResult
+     * @return array
      */
     abstract public function copyReplace($fromDir, $toDir, $filenames);
 
@@ -97,7 +90,7 @@ abstract class FileManager
      * @param string $oldFileName
      * @param string $newFileName
      * 
-     * @return FileInfoResult
+     * @return array
      */
     abstract public function rename($dir, $oldFileName, $newFileName);
 
@@ -118,7 +111,7 @@ abstract class FileManager
      *      path => \Illuminate\Http\UploadedFile
      * ]
      * 
-     * @return UploadResult
+     * @return array
      */
     abstract public function upload($dir, $files);
 
@@ -130,7 +123,7 @@ abstract class FileManager
      *      path => \Illuminate\Http\UploadedFile
      * ]
      * 
-     * @return UploadResult
+     * @return array
      */
     abstract public function uploadKeepBoth($dir, $files);
 
@@ -142,7 +135,7 @@ abstract class FileManager
      *      path => \Illuminate\Http\UploadedFile
      * ]
      * 
-     * @return UploadResult
+     * @return array
      */
     abstract public function uploadReplace($dir, $files);
 }

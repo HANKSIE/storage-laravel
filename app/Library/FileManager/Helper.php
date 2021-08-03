@@ -4,18 +4,18 @@ namespace App\Library\FileManager;
 
 use App\Helpers\FileHelper;
 use App\Helpers\PathHelper;
-use App\Library\FileManager\Types\FileInfo;
 use Carbon\Carbon;
-use \Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Helper
 {
     private $Storage;
 
-    public function __construct(Filesystem $Storage)
+    public function __construct()
     {
-        $this->Storage = $Storage;
+        $this->Storage = Storage::disk(config('filemanager.disk'));
     }
 
     /**
@@ -38,7 +38,7 @@ class Helper
         return collect($filenames)->map(function ($filename) {
             $mime = $this->Storage->mimeType($filename);
 
-            return FileInfo::make(
+            return
                 [
                     'name' => PathHelper::basename($filename),
                     'dir' => PathHelper::dirname($filename),
@@ -53,8 +53,7 @@ class Helper
                         )->append(' ', 'items') :
                         //檔案大小
                         FileHelper::formatBytes($this->Storage->size($filename))
-                ]
-            );
+                ];
         })->toArray();
     }
 

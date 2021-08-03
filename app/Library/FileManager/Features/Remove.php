@@ -4,17 +4,9 @@ namespace App\Library\FileManager\Features;
 
 use App\Helpers\PathHelper;
 use App\Library\FileManager\Features\Contracts\Feature;
-use App\Library\FileManager\Helper;
-use App\Library\FileManager\Types\Results\RemoveResult;
-use \Illuminate\Contracts\Filesystem\Filesystem;
 
 class Remove extends Feature
 {
-
-    public function __construct(Filesystem $Storage, Helper $Helper)
-    {
-        parent::__construct($Storage, $Helper);
-    }
 
     public function __invoke(...$args)
     {
@@ -45,11 +37,10 @@ class Remove extends Feature
             }
         });
 
-        return RemoveResult::make(
+        return
             [
                 'fails' => $this->Helper->fileInfo($removeFails),
                 'notExists' => $notExists->toArray()
-            ]
-        );
+            ];
     }
 }

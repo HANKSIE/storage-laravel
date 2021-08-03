@@ -4,8 +4,6 @@ namespace App\Library\FileManager\Features;
 
 use App\Helpers\PathHelper;
 use App\Library\FileManager\Features\Contracts\Feature;
-use App\Library\FileManager\Types\Results\FileInfoResult;
-
 
 class MakeDirectory extends Feature
 {
@@ -13,11 +11,15 @@ class MakeDirectory extends Feature
     {
         list($dir, $dirname) = $args;
         $dirpath = PathHelper::concat($dir, $dirname);
-        $this->Storage->makeDirectory($dirpath);
-        return FileInfoResult::make(
+
+        if ($exist = $this->Storage->exists($dirpath)) {
+            $this->Storage->makeDirectory($dirpath);
+        }
+
+        return
             [
                 'fileInfo' =>  $this->Helper->fileInfo([$dirpath])[0],
-            ]
-        );
+                'exist' => $exist
+            ];
     }
 }
