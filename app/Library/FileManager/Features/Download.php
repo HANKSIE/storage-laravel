@@ -8,11 +8,11 @@ use App\Library\FileManager\Helper;
 
 class Download extends Feature
 {
-    private $Zip;
+    private $features = [];
     public function __construct(Helper $Helper, Zip $Zip)
     {
         parent::__construct($Helper);
-        $this->$Zip = $Zip;
+        $this->features['Zip'] = $Zip;
     }
 
     public function __invoke(...$args)
@@ -27,12 +27,12 @@ class Download extends Feature
             $filePath = PathHelper::concat($dir, $filenames->first());
 
             if ($isTemp = $this->Helper->isDirectory($filePath)) {
-                $responseFilePath = $this->Zip($dir, $filenames);
+                $responseFilePath = $this->features['Zip']($dir, $filenames);
             } else {
                 $responseFilePath = $filePath;
             }
         } else {
-            $responseFilePath = $this->Zip($dir, $filenames);
+            $responseFilePath = $this->features['Zip']($dir, $filenames);
             $isTemp = true;
         }
 

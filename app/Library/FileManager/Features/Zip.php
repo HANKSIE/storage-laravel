@@ -4,7 +4,7 @@ namespace App\Library\FileManager\Features;
 
 use App\Helpers\PathHelper;
 use App\Library\FileManager\Features\Contracts\Feature;
-use Illuminate\Support\Facades\File;
+use App\Library\FileManager\Helper;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use ZipArchive;
@@ -13,13 +13,12 @@ class Zip extends Feature
 {
 
     private $ZipArchive;
-    private $absolutePath;
     private $absoluteTempPath;
 
-    public function __construct(ZipArchive $ZipArchive)
+    public function __construct(Helper $Helper, ZipArchive $ZipArchive)
     {
-        $this->absolutePath = $this->Storage->path('');
-        $this->absoluteTempPath = Storage::disk('filemanager.temp_disk')->path('');
+        parent::__construct($Helper);
+        $this->absoluteTempPath = Storage::disk(config('filemanager.temp_disk'))->path('');
         $this->ZipArchive = $ZipArchive;
     }
 
@@ -49,16 +48,15 @@ class Zip extends Feature
     private function recursion_zip($rootDir, $filePaths)
     {
         collect($filePaths)->each(function ($filePath) use ($rootDir) {
-            $absolutePath =  PathHelper::concat($this->absolutePath, $filePath);
-            if (File::exists($absolutePath)) {
-                if (File::isDirectory($absolutePath)) {
+            if ($this->Storage->exists($filePath)) {
+                if ($this->Helper->isDirectory($filePath)) {
                     //mkdir
                     $this->ZipArchive->addEmptyDir((string)Str::of($filePath)->after($rootDir));
 
                     $innerFilePaths = collect(
-                        File::files($filePath)
+                        $this->Storage->files($filePath)
                     )->concat(
-                        File::directories($filePath)
+                        $this->Storage->directories($filePath)
                     );
 
                     // continue..
@@ -67,7 +65,7 @@ class Zip extends Feature
                     // add file
                     $this->ZipArchive->addFromString(
                         (string)Str::of($filePath)->after($rootDir),
-                        File::get($absolutePath)
+                        $this->Storage->get($filePath)
                     );
                 }
             }
