@@ -42,7 +42,7 @@ class Helper
                     'name' => PathHelper::basename($filePath),
                     'dir' => PathHelper::dirname($filePath),
                     'mime' => $mime,
-                    'last_modified' => Carbon::createFromTimestamp(
+                    'lastModified' => Carbon::createFromTimestamp(
                         $this->Storage->lastModified($filePath)
                     )->format('Y/m/d h:m'),
                     'size' => $this->isDirectory($filePath) ?

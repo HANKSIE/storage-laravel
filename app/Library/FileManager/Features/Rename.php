@@ -24,9 +24,14 @@ class Rename extends Feature
             }
         }
 
+        $newFileInfo = $isSuccess ?
+            $this->Helper->fileInfo([$newFilePath])[0]
+            : null;
+
         return [
             'exist' => $exist,
-            'isSuccess' => $isSuccess
+            'isSuccess' => $isSuccess,
+            'fileInfo' => $newFileInfo
         ];
     }
 }

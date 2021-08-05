@@ -11,13 +11,19 @@ class MakeDirectory extends Feature
     {
         list($dir, $dirname) = $args;
         $dirpath = PathHelper::concat($dir, $dirname);
+        $isSuccess = false;
         if (!($exist = $this->Storage->exists($dirpath))) {
-            $this->Storage->makeDirectory($dirpath);
+            $isSuccess = $this->Storage->makeDirectory($dirpath);
         }
 
+        $fileInfo = $isSuccess ?
+            $this->Helper->fileInfo([$dirpath])[0]
+            : null;
+
         return [
-            'fileInfo' =>  $this->Helper->fileInfo([$dirpath])[0],
-            'exist' => $exist
+            'exist' => $exist,
+            'isSuccess' => $isSuccess,
+            'fileInfo' => $fileInfo,
         ];
     }
 }

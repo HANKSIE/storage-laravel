@@ -38,7 +38,7 @@ class Remove extends Feature
         });
 
         return [
-            'fails' => $this->Helper->fileInfo($removeFails),
+            'fails' => $removeFails,
             'notExists' => $notExists->toArray()
         ];
     }
