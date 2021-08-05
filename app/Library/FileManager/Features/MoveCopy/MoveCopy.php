@@ -2,6 +2,7 @@
 
 namespace App\Library\FileManager\Features\MoveCopy;
 
+use App\Contracts\FileManager;
 use App\Helpers\PathHelper;
 use App\Library\FileManager\Features\Contracts\Feature;
 
@@ -10,36 +11,63 @@ abstract class MoveCopy extends Feature
 
     public function __invoke(...$args)
     {
-        list($fromDir, $toDir, $filenames) = $args;
+        list($fromDir, $toDir, $filenames, $options) = $args;
 
-        $exists = collect();
-        $notExists = collect();
-        $selfs = collect();
-        $fails = collect();
+        $fileDatas = $this->getFileDatas($fromDir, $toDir, $filenames);
 
-        collect($filenames)->each(function ($filename) use ($fromDir, $toDir, $exists, $notExists, $selfs, $fails) {
-            $fromPath = PathHelper::concat($fromDir, $filename);
-            $toPath = PathHelper::concat($toDir, $filename);
+        $exists = $this->getHasExists($fileDatas);
 
-            if (!$this->Storage->exists($fromPath)) {
-                $notExists->push($filename);
-                return;
-            }
+        $notExists = $this->getNotExists($fileDatas);
 
-            if ($this->isSelf($fromPath, $toPath, $filename)) {
-                $selfs->push($filename);
-                return;
-            }
+        $selfs = $this->getHasSelfs($fileDatas);
 
-            if ($this->Storage->exists($toPath)) {
-                $exists->push($toPath);
-                return;
-            }
-
-            if (!$this->handle($fromPath, $toPath)) {
-                $fails->push($filename);
-            }
+        $canCopyMove = collect($fileDatas)->filter(function ($data) use ($selfs) {
+            return !$selfs->contains($data['fromPath']);
+        })->filter(function ($data) use ($notExists) {
+            return !$notExists->contains($data['fromPath']);
         });
+
+        switch ($options) {
+            case FileManager::OVERRIDE_NONE:
+                $canCopyMove = $canCopyMove->filter(function ($data) use ($exists) {
+                    return !$exists->contains($data['toPath']);
+                });
+                break;
+            case FileManager::OVERRIDE_KEEPBOTH:
+                $canCopyMove = $canCopyMove->map(function ($data) {
+                    return array_merge(
+                        $data,
+                        [
+                            'toPath' => $this->Helper->createUniqueName($data['toPath'])
+                        ]
+                    );
+                });
+                break;
+            case FileManager::OVERRIDE_REPLACE:
+                // delete toPath files
+                $canCopyMove->each(function ($data) {
+                    $toPath = $data['toPath'];
+                    if ($this->Helper->isDirectory($toPath)) {
+                        $this->Storage->deleteDirectory($toPath);
+                    } else {
+                        $this->Storage->delete($toPath);
+                    }
+                });
+                break;
+        }
+
+        $successHandleFilePaths = $canCopyMove->filter(function ($data) {
+            return $this->handle($data['fromPath'], $data['toPath']);
+        })->map(function ($successHandleFileData) {
+            return $successHandleFileData['toPath'];
+        });;
+
+        return [
+            'fileInfos' => $this->Helper->fileInfo($successHandleFilePaths),
+            'exists' => $exists,
+            'notExists' => $notExists,
+            'selfs' => $selfs,
+        ];
     }
 
     /**
@@ -50,12 +78,47 @@ abstract class MoveCopy extends Feature
      */
     abstract protected function handle($fromPath, $toPath);
 
-    private function isSelf($fromPath, $toPath, $filename)
+    private function getFileDatas($fromDir, $toDir, $filenames)
     {
-        return  $this->Helper->isDirectory($fromPath) &&
-            PathHelper::equal(
-                PathHelper::concat($fromPath, $filename),
-                $toPath
-            );
+        return collect($filenames)->map(function ($filename) use ($fromDir, $toDir) {
+            $fromPath = PathHelper::concat($fromDir, $filename);
+            $toPath = PathHelper::concat($toDir, $filename);
+            return [
+                'fromPath' => $fromPath,
+                'toPath' => $toPath,
+                'filename' => $filename,
+            ];
+        });
+    }
+
+    private function getHasExists($fileDatas)
+    {
+        return collect($fileDatas)->filter(function ($data) {
+            return $this->Storage->exists($data['toPath']);
+        })->map(function ($data) {
+            return $data['toPath'];
+        });
+    }
+
+    private function getNotExists($fileDatas)
+    {
+        return collect($fileDatas)->filter(function ($data) {
+            return !$this->Storage->exists($data['fromPath']);
+        })->map(function ($data) {
+            return $data['fromPath'];
+        });
+    }
+
+    private function getHasSelfs($fileDatas)
+    {
+        return collect($fileDatas)->filter(function ($data) {
+            return ($this->Helper->isDirectory($data['fromPath']) &&
+                PathHelper::equal(
+                    PathHelper::concat($data['fromPath'], $data['filename']),
+                    $data['toPath']
+                ));
+        })->map(function ($data) {
+            return $data['fromPath'];
+        });
     }
 }

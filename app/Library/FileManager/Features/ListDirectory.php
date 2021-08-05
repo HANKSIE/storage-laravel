@@ -2,32 +2,29 @@
 
 namespace App\Library\FileManager\Features;
 
+use App\Contracts\FileManager;
 use App\Helpers\PathHelper;
 use App\Library\FileManager\Features\Contracts\Feature;
 
 class ListDirectory extends Feature
 {
-    const BOTH = 0;
-    const DIR_ONLY = 1;
-    const FILE_ONLY = 2;
 
     public function __invoke(...$args)
     {
-        $dir = $args[0] ?? '';
-        $only_flag = $args[1] ?? self::BOTH;
+        list($dir, $options) = $args;
 
         $dir = PathHelper::format($dir);
         $dirs = collect($this->Storage->directories($dir));
         $files = collect($this->Storage->files($dir));
 
-        switch ($only_flag) {
-            case self::BOTH:
+        switch ($options) {
+            case FileManager::LIST_ALL:
                 $items = $dirs->concat($files);
                 break;
-            case self::DIR_ONLY:
+            case FileManager::LIST_DIR_ONLY:
                 $items = $dirs;
                 break;
-            case self::FILE_ONLY:
+            case FileManager::LIST_FILE_ONLY:
                 $items = $files;
                 break;
             default:
@@ -37,9 +34,8 @@ class ListDirectory extends Feature
 
         $fileInfos = $this->Helper->fileInfo($items);
 
-        return
-            [
-                'fileInfos' => $fileInfos,
-            ];
+        return [
+            'fileInfos' => $fileInfos,
+        ];
     }
 }

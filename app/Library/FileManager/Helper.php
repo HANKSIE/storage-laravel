@@ -5,7 +5,6 @@ namespace App\Library\FileManager;
 use App\Helpers\FileHelper;
 use App\Helpers\PathHelper;
 use Carbon\Carbon;
-use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -30,29 +29,29 @@ class Helper
 
     /**
      *
-     * @param array $filenames
+     * @param array $filePaths
      * @return array
      */
-    public function fileInfo($filenames)
+    public function fileInfo($filePaths)
     {
-        return collect($filenames)->map(function ($filename) {
-            $mime = $this->Storage->mimeType($filename);
+        return collect($filePaths)->map(function ($filePath) {
+            $mime = $this->Storage->mimeType($filePath);
 
             return
                 [
-                    'name' => PathHelper::basename($filename),
-                    'dir' => PathHelper::dirname($filename),
+                    'name' => PathHelper::basename($filePath),
+                    'dir' => PathHelper::dirname($filePath),
                     'mime' => $mime,
                     'last_modified' => Carbon::createFromTimestamp(
-                        $this->Storage->lastModified($filename)
+                        $this->Storage->lastModified($filePath)
                     )->format('Y/m/d h:m'),
-                    'size' => $this->isDirectory($filename) ?
+                    'size' => $this->isDirectory($filePath) ?
                         (string) Str::of(
                             //該目錄下的檔案/目錄數量
-                            collect($this->Storage->directories($filename))->concat(collect($this->Storage->files($filename)))->count()
+                            collect($this->Storage->directories($filePath))->concat(collect($this->Storage->files($filePath)))->count()
                         )->append(' ', 'items') :
                         //檔案大小
-                        FileHelper::formatBytes($this->Storage->size($filename))
+                        FileHelper::formatBytes($this->Storage->size($filePath))
                 ];
         })->toArray();
     }
@@ -74,6 +73,7 @@ class Helper
                 $path = (string)Str::of($path)->append(' ', 'copy.', $ext);
             }
         }
+
         return $path;
     }
 }

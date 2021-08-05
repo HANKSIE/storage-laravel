@@ -7,6 +7,7 @@ use App\Library\FileManager\Features\Copy;
 use App\Library\FileManager\Features\ListDirectory;
 use App\Library\FileManager\Features\MakeDirectory;
 use App\Library\FileManager\Features\Move;
+use App\Library\FileManager\Features\MoveCopy\MoveCopy;
 use App\Library\FileManager\Features\Remove;
 
 class FileManager extends ContractsFileManager
@@ -27,7 +28,7 @@ class FileManager extends ContractsFileManager
         $this->features['copy'] = $Copy;
     }
 
-    public function list($dir)
+    public function list($dir, $options = self::LIST_ALL)
     {
         return $this->features['list']($dir);
     }
@@ -42,30 +43,14 @@ class FileManager extends ContractsFileManager
         return $this->features['remove']($dir, $filenames);
     }
 
-    public function move($fromDir, $toDir, $filenames)
+    public function move($fromDir, $toDir, $filenames, $options = self::OVERRIDE_NONE)
     {
-        return $this->features['move']($fromDir, $toDir, $filenames);
+        return $this->features['move']($fromDir, $toDir, $filenames, $options);
     }
 
-    public function moveKeepBoth($fromDir, $toDir, $filenames)
+    public function copy($fromDir, $toDir, $filenames, $options = self::OVERRIDE_NONE)
     {
-    }
-
-    public function moveReplace($fromDir, $toDir, $filenames)
-    {
-    }
-
-    public function copy($fromDir, $toDir, $filenames)
-    {
-        return $this->features['copy']($fromDir, $toDir, $filenames);
-    }
-
-    public function copyKeepBoth($fromDir, $toDir, $filenames)
-    {
-    }
-
-    public function copyReplace($fromDir, $toDir, $filenames)
-    {
+        return $this->features['copy']($fromDir, $toDir, $filenames, $options);
     }
 
     public function rename($dir, $oldFileName, $newFileName)
@@ -76,15 +61,7 @@ class FileManager extends ContractsFileManager
     {
     }
 
-    public function upload($dir, $files)
-    {
-    }
-
-    public function uploadKeepBoth($dir, $files)
-    {
-    }
-
-    public function uploadReplace($dir, $files)
+    public function upload($dir, $files, $options = self::OVERRIDE_NONE)
     {
     }
 }

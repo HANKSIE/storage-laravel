@@ -4,13 +4,22 @@ namespace App\Contracts;
 
 abstract class FileManager
 {
+    const LIST_ALL = 0;
+    const LIST_DIR_ONLY = 1;
+    const LIST_FILE_ONLY = 2;
+
+    const OVERRIDE_NONE = 0;
+    const OVERRIDE_KEEPBOTH = 1;
+    const OVERRIDE_REPLACE = 2;
+
     /**
      *
      * @param string $dir
+     * @param int $options
      * 
      * @return array
      */
-    abstract public function list($dir);
+    abstract public function list($dir, $options = self::LIST_ALL);
 
     /**
      *
@@ -35,54 +44,20 @@ abstract class FileManager
      * @param string $fromDir
      * @param string $toDir
      * @param string[] $filenames
+     * @param int $options
      * @return array
      */
-    abstract public function move($fromDir, $toDir, $filenames);
+    abstract public function move($fromDir, $toDir, $filenames, $options = self::OVERRIDE_NONE);
 
     /**
      *
      * @param string $fromDir
      * @param string $toDir
      * @param string[] $filenames
+     * @param int $options
      * @return array
      */
-    abstract public function moveKeepBoth($fromDir, $toDir, $filenames);
-
-    /**
-     *
-     * @param string $fromDir
-     * @param string $toDir
-     * @param string[] $filenames
-     * @return array
-     */
-    abstract public function moveReplace($fromDir, $toDir, $filenames);
-
-    /**
-     *
-     * @param string $fromDir
-     * @param string $toDir
-     * @param string[] $filenames
-     * @return array
-     */
-    abstract public function copy($fromDir, $toDir, $filenames);
-
-    /**
-     *
-     * @param string $fromDir
-     * @param string $toDir
-     * @param string[] $filenames
-     * @return array
-     */
-    abstract public function copyKeepBoth($fromDir, $toDir, $filenames);
-
-    /**
-     *
-     * @param string $fromDir
-     * @param string $toDir
-     * @param string[] $filenames
-     * @return array
-     */
-    abstract public function copyReplace($fromDir, $toDir, $filenames);
+    abstract public function copy($fromDir, $toDir, $filenames, $options = self::OVERRIDE_NONE);
 
     /**
      *
@@ -110,32 +85,9 @@ abstract class FileManager
      * [
      *      path => \Illuminate\Http\UploadedFile
      * ]
+     * @param int $options
      * 
      * @return array
      */
-    abstract public function upload($dir, $files);
-
-    /**
-     *
-     * @param string $dir
-     * @param array $files
-     * [
-     *      path => \Illuminate\Http\UploadedFile
-     * ]
-     * 
-     * @return array
-     */
-    abstract public function uploadKeepBoth($dir, $files);
-
-    /**
-     *
-     * @param string $dir
-     * @param array $files
-     * [
-     *      path => \Illuminate\Http\UploadedFile
-     * ]
-     * 
-     * @return array
-     */
-    abstract public function uploadReplace($dir, $files);
+    abstract public function upload($dir, $files, $options = self::OVERRIDE_NONE);
 }

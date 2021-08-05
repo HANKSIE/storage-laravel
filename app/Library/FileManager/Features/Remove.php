@@ -37,10 +37,9 @@ class Remove extends Feature
             }
         });
 
-        return
-            [
-                'fails' => $this->Helper->fileInfo($removeFails),
-                'notExists' => $notExists->toArray()
-            ];
+        return [
+            'fails' => $this->Helper->fileInfo($removeFails),
+            'notExists' => $notExists->toArray()
+        ];
     }
 }
