@@ -21,7 +21,7 @@ abstract class MoveCopy extends Feature
 
         $selfs = $this->getHasSelfs($fileDatas);
 
-        $canCopyMove = collect($fileDatas)->filter(function ($data) use ($selfs) {
+        $canHandle = collect($fileDatas)->filter(function ($data) use ($selfs) {
             return !$selfs->contains($data['fromPath']);
         })->filter(function ($data) use ($notExists) {
             return !$notExists->contains($data['fromPath']);
@@ -29,12 +29,12 @@ abstract class MoveCopy extends Feature
 
         switch ($options) {
             case FileManager::OVERRIDE_NONE:
-                $canCopyMove = $canCopyMove->filter(function ($data) use ($exists) {
+                $canHandle = $canHandle->filter(function ($data) use ($exists) {
                     return !$exists->contains($data['toPath']);
                 });
                 break;
             case FileManager::OVERRIDE_KEEPBOTH:
-                $canCopyMove = $canCopyMove->map(function ($data) {
+                $canHandle = $canHandle->map(function ($data) {
                     return array_merge(
                         $data,
                         [
@@ -45,7 +45,7 @@ abstract class MoveCopy extends Feature
                 break;
             case FileManager::OVERRIDE_REPLACE:
                 // delete toPath files
-                $canCopyMove->each(function ($data) {
+                $canHandle->each(function ($data) {
                     $toPath = $data['toPath'];
                     if ($this->Helper->isDirectory($toPath)) {
                         $this->Storage->deleteDirectory($toPath);
@@ -56,7 +56,7 @@ abstract class MoveCopy extends Feature
                 break;
         }
 
-        $successHandleFilePaths = $canCopyMove->filter(function ($data) {
+        $successHandleFilePaths = $canHandle->filter(function ($data) {
             return $this->handle($data['fromPath'], $data['toPath']);
         })->map(function ($successHandleFileData) {
             return $successHandleFileData['toPath'];

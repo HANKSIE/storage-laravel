@@ -26,7 +26,7 @@ class PathHelper
         }
     }
 
-    public static function rootItem($path)
+    public static function rootFileName($path)
     {
         $path = Str::of(self::format($path));
         if (!$path->contains('/')) {

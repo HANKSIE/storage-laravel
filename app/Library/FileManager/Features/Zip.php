@@ -1,23 +1,26 @@
 <?php
 
-namespace App\Library\FileManager;
+namespace App\Library\FileManager\Features;
 
 use App\Helpers\PathHelper;
+use App\Library\FileManager\Features\Contracts\Feature;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use ZipArchive;
 
-class Zipper
+class Zip extends Feature
 {
+
     private $ZipArchive;
     private $absolutePath;
     private $absoluteTempPath;
 
-    public function __construct($absolutePath, $absoluteTempPath)
+    public function __construct(ZipArchive $ZipArchive)
     {
-        $this->absolutePath = $absolutePath;
-        $this->absoluteTempPath = $absoluteTempPath;
-        $this->ZipArchive = new ZipArchive();
+        $this->absolutePath = $this->Storage->path('');
+        $this->absoluteTempPath = Storage::disk('filemanager.temp_disk')->path('');
+        $this->ZipArchive = $ZipArchive;
     }
 
     /**
@@ -26,36 +29,36 @@ class Zipper
      * @param array $filenames
      * @return string - zip absolute path
      */
-    public function zip($dir, $filenames)
+    public function __invoke(...$args)
     {
+        list($dir, $filenames) = $args;
+
         $dir = PathHelper::format($dir);
         $zipPath = PathHelper::concat($this->absoluteTempPath, uniqid() . ".zip");
 
-        $filepaths = collect($filenames)->map(function ($filename) use ($dir) {
+        $filePaths = collect($filenames)->map(function ($filename) use ($dir) {
             return PathHelper::concat($dir, $filename);
         });
 
         $this->ZipArchive->open($zipPath,  ZipArchive::CREATE);
-        $this->recursion_zip($dir, $filepaths);
+        $this->recursion_zip($dir, $filePaths);
         $this->ZipArchive->close();
         return $zipPath;
     }
 
-    private function recursion_zip($rootDir, $filepaths)
+    private function recursion_zip($rootDir, $filePaths)
     {
-        collect($filepaths)->each(function ($filepath) use ($rootDir) {
-            $absolutePath =  PathHelper::concat($this->absolutePath, $filepath);
+        collect($filePaths)->each(function ($filePath) use ($rootDir) {
+            $absolutePath =  PathHelper::concat($this->absolutePath, $filePath);
             if (File::exists($absolutePath)) {
                 if (File::isDirectory($absolutePath)) {
-                    // get filepaths & folders in dir
-
                     //mkdir
-                    $this->ZipArchive->addEmptyDir((string)Str::of($filepath)->after($rootDir));
+                    $this->ZipArchive->addEmptyDir((string)Str::of($filePath)->after($rootDir));
 
                     $innerFilePaths = collect(
-                        File::files($filepath)
+                        File::files($filePath)
                     )->concat(
-                        File::directories($filepath)
+                        File::directories($filePath)
                     );
 
                     // continue..
@@ -63,7 +66,7 @@ class Zipper
                 } else {
                     // add file
                     $this->ZipArchive->addFromString(
-                        (string)Str::of($filepath)->after($rootDir),
+                        (string)Str::of($filePath)->after($rootDir),
                         File::get($absolutePath)
                     );
                 }

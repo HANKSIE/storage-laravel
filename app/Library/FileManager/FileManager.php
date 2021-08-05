@@ -4,11 +4,13 @@ namespace App\Library\FileManager;
 
 use App\Contracts\FileManager as ContractsFileManager;
 use App\Library\FileManager\Features\Copy;
+use App\Library\FileManager\Features\Download;
 use App\Library\FileManager\Features\ListDirectory;
 use App\Library\FileManager\Features\MakeDirectory;
 use App\Library\FileManager\Features\Move;
-use App\Library\FileManager\Features\MoveCopy\MoveCopy;
 use App\Library\FileManager\Features\Remove;
+use App\Library\FileManager\Features\Rename;
+use App\Library\FileManager\Features\Upload;
 
 class FileManager extends ContractsFileManager
 {
@@ -19,13 +21,19 @@ class FileManager extends ContractsFileManager
         MakeDirectory $MakeDirectory,
         Remove $Remove,
         Move $Move,
-        Copy $Copy
+        Copy $Copy,
+        Rename $Rename,
+        Download $Download,
+        Upload $Upload
     ) {
         $this->features['list'] = $ListDirectory;
         $this->features['mkdir'] = $MakeDirectory;
         $this->features['remove'] = $Remove;
         $this->features['move'] = $Move;
         $this->features['copy'] = $Copy;
+        $this->features['rename'] = $Rename;
+        $this->features['download'] = $Download;
+        $this->features['upload'] = $Upload;
     }
 
     public function list($dir, $options = self::LIST_ALL)
@@ -55,13 +63,16 @@ class FileManager extends ContractsFileManager
 
     public function rename($dir, $oldFileName, $newFileName)
     {
+        return $this->features['rename']($dir, $oldFileName, $newFileName);
     }
 
     public function download($dir, $filenames)
     {
+        return $this->features['download']($dir, $filenames);
     }
 
     public function upload($dir, $files, $options = self::OVERRIDE_NONE)
     {
+        return $this->features['upload']($dir, $files, $options);
     }
 }
