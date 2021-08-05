@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\FileManager;
 
-use App\Library\FileManager;
+use App\Contracts\FileManager;
 use Illuminate\Support\Facades\Route;
 
 abstract class AuthorizeFileManagerController extends FileManagerController
