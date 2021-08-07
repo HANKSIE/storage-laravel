@@ -24,7 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [AuthenticatedController::class, 'user']);
 
     Route::prefix('user')->group(function () {
-        Route::prefix('{user}')->group(function () {
+        Route::prefix('{id}')->group(function () {
             Route::prefix('files')->group(function () {
                 Route::post('', [UserFileManagerController::class, 'list']);
                 Route::post('mkdir', [UserFileManagerController::class, 'mkdir']);

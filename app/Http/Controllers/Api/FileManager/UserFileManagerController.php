@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\Api\FileManager;
 
+use Illuminate\Http\Request;
+
 class UserFileManagerController extends AuthorizeFileManagerController
 {
     protected function root($id)
     {
-        return "user/$id/root";
+        return "user/$id/files";
     }
 
     protected function auth($id)
     {
-        $this->authorize('filemanager-user-access', [$id]);
+        abort_if(auth()->id() != $id, 403);
     }
 }

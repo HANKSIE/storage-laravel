@@ -27,7 +27,12 @@ abstract class AuthorizeFileManagerController extends FileManagerController
     {
         parent::__construct($FileManager);
 
-        $id = Route::current()->parameter('id');
-        $this->auth($id);
+        $this->middleware(function ($request, $next) {
+
+            $id = $request->route()->parameter('id');
+            $this->auth($id);
+
+            return $next($request);
+        });
     }
 }

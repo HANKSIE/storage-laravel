@@ -38,7 +38,7 @@ class FileManager extends ContractsFileManager
 
     public function list($dir, $options = self::LIST_ALL)
     {
-        return $this->features['list']($dir);
+        return $this->features['list']($dir, $options);
     }
 
     public function makeDirectory($dir, $filename)
