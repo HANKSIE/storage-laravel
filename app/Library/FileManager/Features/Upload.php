@@ -16,13 +16,11 @@ class Upload extends Feature
 
         $files = $this->formatFiles($files);
 
-        $filePaths = $files->map(function ($file, $filePath) {
-            return $filePath;
-        });
+        $filePaths = $files->keys();
 
         $rootFileNames = $this->getRootFileNames($filePaths);
 
-        $exists = collect($rootFileNames)->map(function ($filename) use ($dir) {
+        $exists = collect($rootFileNames)->filter(function ($filename) use ($dir) {
             $filePath = PathHelper::concat($dir, $filename);
             return $this->Storage->exists($filePath);
         });
@@ -59,21 +57,29 @@ class Upload extends Feature
         }
 
         //save files
-        $filePaths = $files->filter(function ($file, $filePath) use ($dir) {
+        $fails = $files->filter(function ($file, $filePath) use ($dir) {
             $filePath = PathHelper::concat($dir, $filePath);
-            return !!$this->Storage->putFileAs(
+            return !$this->Storage->putFileAs(
                 PathHelper::dirname($filePath),
                 $file,
                 PathHelper::basename($filePath)
             );
-        })->map(function ($file, $filePath) use ($dir) {
-            return PathHelper::concat($dir, $filePath);
-        });
+        })->keys();
 
+        $failsRootFileNames = $this->getRootFileNames($fails);
+
+        $rootFilePaths = collect($rootFileNames)
+            ->filter(function ($rootFileName) use ($failsRootFileNames) {
+                return !collect($failsRootFileNames)->contains($rootFileName);
+            })
+            ->map(function ($rootFileName) use ($dir) {
+                return PathHelper::concat($dir, $rootFileName);
+            });
 
         return [
+            'fails' => $fails,
             'exists' => $exists,
-            'fileInfos' => $this->Helper->fileInfo($filePaths),
+            'fileInfos' => $this->Helper->fileInfo($rootFilePaths),
         ];
     }
 
@@ -90,7 +96,7 @@ class Upload extends Feature
     private function getRootFileNames($filePaths)
     {
         $rootFileNames = new Set(
-            collect($filePaths)->each(function ($filePath) {
+            collect($filePaths)->map(function ($filePath) {
                 return PathHelper::rootFileName($filePath);
             })->toArray()
         );

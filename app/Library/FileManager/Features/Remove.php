@@ -17,9 +17,10 @@ class Remove extends Feature
         });
 
         $removeFails = collect();
+        $removeSuccesses = collect();
         $notExists = collect();
 
-        $filepaths->each(function ($filepath) use ($removeFails, $notExists) {
+        $filepaths->each(function ($filepath) use ($removeFails, $removeSuccesses, $notExists) {
             $isSuccess = false;
 
             if ($this->Storage->exists($filepath)) {
@@ -31,6 +32,8 @@ class Remove extends Feature
 
                 if (!$isSuccess) {
                     $removeFails->push(PathHelper::basename($filepath));
+                } else {
+                    $removeSuccesses->push(PathHelper::basename($filepath));
                 }
             } else {
                 $notExists->push($filepath);
@@ -38,8 +41,9 @@ class Remove extends Feature
         });
 
         return [
+            'successes' => $removeSuccesses,
             'fails' => $removeFails,
-            'notExists' => $notExists->toArray()
+            'notExists' => $notExists
         ];
     }
 }
