@@ -30,7 +30,7 @@ class PathHelper
     {
         $path = Str::of(self::format($path));
         if (!$path->contains('/')) {
-            return '';
+            return $path;
         }
 
         $firstCh = ((string)$path)[0];

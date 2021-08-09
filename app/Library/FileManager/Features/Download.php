@@ -36,7 +36,7 @@ class Download extends Feature
             $isTemp = true;
         }
 
-        $absoluteResponseFilePath = $this->Storage->path($responseFilePath);
+        $absoluteResponseFilePath = $isTemp ? $responseFilePath : $this->Storage->path($responseFilePath);
 
         return [
             'absolutePath' => $absoluteResponseFilePath,
