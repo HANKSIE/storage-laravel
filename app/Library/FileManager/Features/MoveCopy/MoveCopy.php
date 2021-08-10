@@ -5,6 +5,7 @@ namespace App\Library\FileManager\Features\MoveCopy;
 use App\Contracts\FileManager;
 use App\Helpers\PathHelper;
 use App\Library\FileManager\Features\Contracts\Feature;
+use Illuminate\Support\Str;
 
 abstract class MoveCopy extends Feature
 {
@@ -113,9 +114,8 @@ abstract class MoveCopy extends Feature
     {
         return collect($fileDatas)->filter(function ($data) {
             return ($this->Helper->isDirectory($data['fromPath']) &&
-                PathHelper::equal(
-                    PathHelper::concat($data['fromPath'], $data['filename']),
-                    $data['toPath']
+                Str::of($data['toPath'])->contains(
+                    $data['fromPath']
                 ));
         })->map(function ($data) {
             return $data['fromPath'];
