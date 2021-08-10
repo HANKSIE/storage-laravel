@@ -31,7 +31,7 @@ abstract class MoveCopy extends Feature
         switch ($options) {
             case FileManager::OVERRIDE_NONE:
                 $canHandle = $canHandle->filter(function ($data) use ($exists) {
-                    return !$exists->contains($data['toPath']);
+                    return !$exists->contains($data['filename']);
                 });
                 break;
             case FileManager::OVERRIDE_KEEPBOTH:
@@ -97,7 +97,7 @@ abstract class MoveCopy extends Feature
         return collect($fileDatas)->filter(function ($data) {
             return $this->Storage->exists($data['toPath']);
         })->map(function ($data) {
-            return $data['toPath'];
+            return $data['filename'];
         });
     }
 
