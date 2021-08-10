@@ -113,12 +113,15 @@ abstract class MoveCopy extends Feature
     private function getHasSelfs($fileDatas)
     {
         return collect($fileDatas)->filter(function ($data) {
-            return ($this->Helper->isDirectory($data['fromPath']) &&
-                Str::of($data['toPath'])->contains(
-                    $data['fromPath']
-                ));
+            if ($this->Storage->exists($data['fromPath'])) {
+                return ($this->Helper->isDirectory($data['fromPath']) &&
+                    Str::of($data['toPath'])->contains(
+                        $data['fromPath']
+                    ));
+            }
+            return false;
         })->map(function ($data) {
             return $data['filename'];
-        });
+        })->values();
     }
 }

@@ -33,12 +33,12 @@ class Upload extends Feature
                 });
                 break;
             case FileManager::OVERRIDE_KEEPBOTH:
-                $files = $files->mapWithKeys(function ($file, $filePath) {
+                $files = $files->mapWithKeys(function ($file, $filePath) use ($dir) {
                     $oldRootFileName = PathHelper::rootFileName($filePath);
-
-                    $newFilePath = $this->Helper->createUniqueName($filePath);
-                    $newRootFileName = PathHelper::rootFileName($newFilePath);
-                    $newRootFilePath = (string)Str::of($oldRootFileName)->replaceFirst(
+                    $oldRootFilePath = PathHelper::concat($dir, $oldRootFileName);
+                    $newRootFilePath = $this->Helper->createUniqueName($oldRootFilePath);
+                    $newRootFileName = PathHelper::basename($newRootFilePath);
+                    $newRootFilePath = (string)Str::of($filePath)->replaceFirst(
                         $oldRootFileName,
                         $newRootFileName
                     );
@@ -47,11 +47,14 @@ class Upload extends Feature
                 });
                 break;
             case FileManager::OVERRIDE_REPLACE:
-                $exists->each(function ($filePath) {
-                    if ($this->Helper->isDirectory($filePath)) {
-                        $this->Storage->deleteDirectory($filePath);
-                    } else {
-                        $this->Storage->delete($filePath);
+                $exists->each(function ($filePath) use ($dir) {
+                    $filePath = PathHelper::concat($dir, $filePath);
+                    if ($this->Storage->exists($filePath)) {
+                        if ($this->Helper->isDirectory($filePath)) {
+                            $this->Storage->deleteDirectory($filePath);
+                        } else {
+                            $this->Storage->delete($filePath);
+                        }
                     }
                 });
                 break;
