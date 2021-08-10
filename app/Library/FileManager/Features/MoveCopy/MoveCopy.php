@@ -23,9 +23,9 @@ abstract class MoveCopy extends Feature
         $selfs = $this->getHasSelfs($fileDatas);
 
         $canHandle = collect($fileDatas)->filter(function ($data) use ($selfs) {
-            return !$selfs->contains($data['fromPath']);
+            return !$selfs->contains($data['filename']);
         })->filter(function ($data) use ($notExists) {
-            return !$notExists->contains($data['fromPath']);
+            return !$notExists->contains($data['filename']);
         });
 
         switch ($options) {
@@ -106,7 +106,7 @@ abstract class MoveCopy extends Feature
         return collect($fileDatas)->filter(function ($data) {
             return !$this->Storage->exists($data['fromPath']);
         })->map(function ($data) {
-            return $data['fromPath'];
+            return $data['filename'];
         });
     }
 
@@ -118,7 +118,7 @@ abstract class MoveCopy extends Feature
                     $data['fromPath']
                 ));
         })->map(function ($data) {
-            return $data['fromPath'];
+            return $data['filename'];
         });
     }
 }
