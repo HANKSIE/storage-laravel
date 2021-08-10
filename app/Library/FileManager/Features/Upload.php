@@ -28,7 +28,8 @@ class Upload extends Feature
         switch ($options) {
             case FileManager::OVERRIDE_NONE:
                 $files = $files->filter(function ($file, $filePath) use ($exists) {
-                    return !$exists->contains($filePath);
+                    $rootFileName = PathHelper::rootFileName($filePath);
+                    return !$exists->contains($rootFileName);
                 });
                 break;
             case FileManager::OVERRIDE_KEEPBOTH:
@@ -56,25 +57,29 @@ class Upload extends Feature
                 break;
         }
 
+        $fails = collect();
+        $successes = collect();
         //save files
-        $fails = $files->filter(function ($file, $filePath) use ($dir) {
-            $filePath = PathHelper::concat($dir, $filePath);
-            return !$this->Storage->putFileAs(
-                PathHelper::dirname($filePath),
+        $files->each(function ($file, $filePath) use ($dir, $fails, $successes) {
+            $uploadFilePath = PathHelper::concat($dir, $filePath);
+            $isSuccess = $this->Storage->putFileAs(
+                PathHelper::dirname($uploadFilePath),
                 $file,
-                PathHelper::basename($filePath)
+                PathHelper::basename($uploadFilePath)
             );
-        })->keys();
 
-        $failsRootFileNames = $this->getRootFileNames($fails);
+            if ($isSuccess) {
+                $successes->push($filePath);
+            } else {
+                $fails->push($filePath);
+            }
+        });
 
-        $rootFilePaths = collect($rootFileNames)
-            ->filter(function ($rootFileName) use ($failsRootFileNames) {
-                return !collect($failsRootFileNames)->contains($rootFileName);
-            })
-            ->map(function ($rootFileName) use ($dir) {
-                return PathHelper::concat($dir, $rootFileName);
-            });
+        $successRootFileNames = $this->getRootFileNames($successes);
+
+        $rootFilePaths = collect($successRootFileNames)->map(function ($rootFileName) use ($dir) {
+            return PathHelper::concat($dir, $rootFileName);
+        });
 
         return [
             'fails' => $fails,
