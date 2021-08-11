@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Contracts\FileManager as ContractsFileManager;
+use App\Library\FileManager\FileManager;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind(ContractsFileManager::class, FileManager::class);
     }
 
     /**
