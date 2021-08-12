@@ -43,7 +43,7 @@ class Helper
                     'mime' => $mime,
                     'lastModified' => Carbon::createFromTimestamp(
                         $this->Storage->lastModified($filePath)
-                    )->format('Y/m/d h:m'),
+                    )->format('Y/m/d H:i:s'),
                     'size' => $this->isDirectory($filePath) ?
                         (string) Str::of(
                             //該目錄下的檔案/目錄數量
