@@ -40,7 +40,6 @@ class Helper
             return
                 [
                     'name' => PathHelper::basename($filePath),
-                    'dir' => PathHelper::dirname($filePath),
                     'mime' => $mime,
                     'lastModified' => Carbon::createFromTimestamp(
                         $this->Storage->lastModified($filePath)
