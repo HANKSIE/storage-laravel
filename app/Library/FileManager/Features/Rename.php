@@ -17,11 +17,8 @@ class Rename extends Feature
 
         $isSuccess = false;
 
-        if (!($exist = $this->Storage->exists($newFilePath))) { {
-                $absoluteOldeFilePath = $this->Storage->path($oldFilePath);
-                $absoluteNewFilePath = $this->Storage->path($newFilePath);
-                $isSuccess = rename($absoluteOldeFilePath, $absoluteNewFilePath);
-            }
+        if (!($exist = $this->Storage->exists($newFilePath))) {
+            $isSuccess = $this->Storage->move($oldFilePath, $newFilePath);
         }
 
         $newFileInfo = $isSuccess ?
