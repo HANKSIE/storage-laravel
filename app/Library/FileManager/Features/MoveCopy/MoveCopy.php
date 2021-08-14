@@ -113,7 +113,7 @@ abstract class MoveCopy extends Feature
             return $this->Storage->exists($data['toPath']);
         })->map(function ($data) {
             return $data['filename'];
-        });
+        })->values();
     }
 
     private function getNotExists($fileDatas)
@@ -122,7 +122,7 @@ abstract class MoveCopy extends Feature
             return !$this->Storage->exists($data['fromPath']);
         })->map(function ($data) {
             return $data['filename'];
-        });
+        })->values();
     }
 
     private function getHasSelfs($fileDatas)
