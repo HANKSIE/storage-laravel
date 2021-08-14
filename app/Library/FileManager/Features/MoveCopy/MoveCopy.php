@@ -5,6 +5,7 @@ namespace App\Library\FileManager\Features\MoveCopy;
 use App\Contracts\FileManager;
 use App\Helpers\PathHelper;
 use App\Library\FileManager\Features\Contracts\Feature;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 abstract class MoveCopy extends Feature
@@ -13,6 +14,13 @@ abstract class MoveCopy extends Feature
     public function __invoke(...$args)
     {
         list($fromDir, $toDir, $filenames, $options) = $args;
+
+        $fromDir = PathHelper::format($fromDir);
+        $toDir = PathHelper::format($toDir);
+
+        if ($this->action() == FileManager::ACTION_MOVE && $fromDir === $toDir) {
+            abort(422, 'cannot move when "from dir" = "to dir"');
+        }
 
         $fileDatas = $this->getFileDatas($fromDir, $toDir, $filenames);
 
@@ -45,23 +53,36 @@ abstract class MoveCopy extends Feature
                 });
                 break;
             case FileManager::OVERRIDE_REPLACE:
-                // delete toPath files
-                $canHandle->each(function ($data) {
-                    $toPath = $data['toPath'];
-                    if ($this->Helper->isDirectory($toPath)) {
-                        $this->Storage->deleteDirectory($toPath);
-                    } else {
-                        $this->Storage->delete($toPath);
-                    }
-                });
-                break;
+
+                if ($fromDir !== $toDir) {
+                    // delete toPath files
+                    $canHandle->each(function ($data) {
+                        $toPath = $data['toPath'];
+                        if ($this->Helper->isDirectory($toPath)) {
+                            $this->Storage->deleteDirectory($toPath);
+                        } else {
+                            $this->Storage->delete($toPath);
+                        }
+                    });
+                    break;
+                }
         }
 
-        $successHandleFilePaths = $canHandle->filter(function ($data) {
-            return $this->handle($data['fromPath'], $data['toPath']);
-        })->map(function ($successHandleFileData) {
-            return $successHandleFileData['toPath'];
-        });;
+        $successHandleFilePaths =
+            ($fromDir === $toDir) ?
+            $canHandle->map(function ($data) {
+                return $data['toPath'];
+            }) :
+            $canHandle->filter(function ($data) {
+                if ($this->action() === FileManager::ACTION_COPY) {
+                    return $this->copy($data['fromPath'], $data['toPath']);
+                }
+                if ($this->action() === FileManager::ACTION_MOVE) {
+                    return $this->move($data['fromPath'], $data['toPath']);
+                }
+            })->map(function ($successHandleFileData) {
+                return $successHandleFileData['toPath'];
+            });
 
         return [
             'fileInfos' => $this->Helper->fileInfo($successHandleFilePaths),
@@ -73,11 +94,9 @@ abstract class MoveCopy extends Feature
 
     /**
      *
-     * @param string $fromPath
-     * @param string $toPath
-     * @return boolean
+     * @return string|int
      */
-    abstract protected function handle($fromPath, $toPath);
+    abstract protected function action();
 
     private function getFileDatas($fromDir, $toDir, $filenames)
     {
@@ -115,6 +134,7 @@ abstract class MoveCopy extends Feature
         return collect($fileDatas)->filter(function ($data) {
             if ($this->Storage->exists($data['fromPath'])) {
                 return ($this->Helper->isDirectory($data['fromPath']) &&
+                    $data['fromPath'] !== $data['toPath'] &&
                     Str::of($data['toPath'])->contains(
                         $data['fromPath']
                     ));
@@ -123,5 +143,27 @@ abstract class MoveCopy extends Feature
         })->map(function ($data) {
             return $data['filename'];
         })->values();
+    }
+
+    protected function copy($fromPath, $toPath)
+    {
+        if ($this->Helper->isDirectory($fromPath)) {
+            $absoluteFromPath = PathHelper::format($this->Storage->path($fromPath));
+            $absoluteToPath = PathHelper::format($this->Storage->path($toPath));
+            return File::copyDirectory($absoluteFromPath, $absoluteToPath);
+        } else {
+            return $this->Storage->copy($fromPath, $toPath);
+        }
+    }
+
+    protected function move($fromPath, $toPath)
+    {
+        if ($this->Helper->isDirectory($fromPath)) {
+            $absoluteFromPath = PathHelper::format($this->Storage->path($fromPath));
+            $absoluteToPath = PathHelper::format($this->Storage->path($toPath));
+            return File::moveDirectory($absoluteFromPath, $absoluteToPath);
+        } else {
+            return $this->Storage->move($fromPath, $toPath);
+        }
     }
 }

@@ -12,6 +12,9 @@ abstract class FileManager
     const OVERRIDE_KEEPBOTH = 1;
     const OVERRIDE_REPLACE = 2;
 
+    const ACTION_COPY = 0;
+    const ACTION_MOVE = 1;
+
     /**
      *
      * @param string $dir
