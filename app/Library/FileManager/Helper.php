@@ -52,7 +52,7 @@ class Helper
                         //檔案大小
                         FileHelper::formatBytes($this->Storage->size($filePath))
                 ];
-        })->toArray();
+        })->values();
     }
 
     /**
