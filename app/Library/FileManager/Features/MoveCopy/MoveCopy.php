@@ -115,6 +115,7 @@ abstract class MoveCopy extends Feature
         return collect($fileDatas)->filter(function ($data) {
             if ($this->Storage->exists($data['fromPath'])) {
                 return ($this->Helper->isDirectory($data['fromPath']) &&
+                    $data['fromPath'] !== $data['toPath'] &&
                     Str::of($data['toPath'])->contains(
                         $data['fromPath']
                     ));
