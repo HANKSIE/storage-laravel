@@ -69,7 +69,7 @@ abstract class MoveCopy extends Feature
         }
 
         $successHandleFilePaths =
-            ($fromDir === $toDir) ?
+            ($fromDir === $toDir && $options == FileManager::ACTION_MOVE) ?
             $canHandle->map(function ($data) {
                 return $data['toPath'];
             }) :
