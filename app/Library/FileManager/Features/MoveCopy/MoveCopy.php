@@ -68,21 +68,16 @@ abstract class MoveCopy extends Feature
                 }
         }
 
-        $successHandleFilePaths =
-            ($fromDir === $toDir && $options == FileManager::ACTION_MOVE) ?
-            $canHandle->map(function ($data) {
-                return $data['toPath'];
-            }) :
-            $canHandle->filter(function ($data) {
-                if ($this->action() === FileManager::ACTION_COPY) {
-                    return $this->copy($data['fromPath'], $data['toPath']);
-                }
-                if ($this->action() === FileManager::ACTION_MOVE) {
-                    return $this->move($data['fromPath'], $data['toPath']);
-                }
-            })->map(function ($successHandleFileData) {
-                return $successHandleFileData['toPath'];
-            });
+        $successHandleFilePaths = $canHandle->filter(function ($data) {
+            if ($this->action() === FileManager::ACTION_COPY) {
+                return $this->copy($data['fromPath'], $data['toPath']);
+            }
+            if ($this->action() === FileManager::ACTION_MOVE) {
+                return $this->move($data['fromPath'], $data['toPath']);
+            }
+        })->map(function ($successHandleFileData) {
+            return $successHandleFileData['toPath'];
+        });
 
         return [
             'fileInfos' => $this->Helper->fileInfo($successHandleFilePaths),
