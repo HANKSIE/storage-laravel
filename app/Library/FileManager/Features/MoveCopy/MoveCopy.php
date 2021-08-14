@@ -81,7 +81,7 @@ abstract class MoveCopy extends Feature
         });
 
         return [
-            'fileInfos' => $this->Helper->fileInfo($successHandleFilePaths),
+            'fileInfos' => $this->Helper->fileInfo(collect($successHandleFilePaths)),
             'exists' => $exists,
             'notExists' => $notExists,
             'selfs' => $selfs,
