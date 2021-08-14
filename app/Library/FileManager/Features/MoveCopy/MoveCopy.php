@@ -22,6 +22,10 @@ abstract class MoveCopy extends Feature
             abort(422, 'cannot move when "from dir" = "to dir"');
         }
 
+        if ($this->action() == FileManager::ACTION_COPY && $fromDir === $toDir && $options == FileManager::OVERRIDE_REPLACE) {
+            abort(422, 'cannot copy replace when "from dir" = "to dir"');
+        }
+
         $fileDatas = $this->getFileDatas($fromDir, $toDir, $filenames);
 
         $exists = $this->getHasExists($fileDatas);
@@ -53,19 +57,16 @@ abstract class MoveCopy extends Feature
                 });
                 break;
             case FileManager::OVERRIDE_REPLACE:
-
-                if ($fromDir !== $toDir) {
-                    // delete toPath files
-                    $canHandle->each(function ($data) {
-                        $toPath = $data['toPath'];
-                        if ($this->Helper->isDirectory($toPath)) {
-                            $this->Storage->deleteDirectory($toPath);
-                        } else {
-                            $this->Storage->delete($toPath);
-                        }
-                    });
-                    break;
-                }
+                // delete toPath files
+                $canHandle->each(function ($data) {
+                    $toPath = $data['toPath'];
+                    if ($this->Helper->isDirectory($toPath)) {
+                        $this->Storage->deleteDirectory($toPath);
+                    } else {
+                        $this->Storage->delete($toPath);
+                    }
+                });
+                break;
         }
 
         $successHandleFilePaths = $canHandle->filter(function ($data) {
