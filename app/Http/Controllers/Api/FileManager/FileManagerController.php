@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Api\FileManager;
 
 use App\Helpers\PathHelper;
 use App\Http\Controllers\Controller;
-use App\Library\FileManager\FileManager;
+use App\Contracts\FileManager;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 
 abstract class FileManagerController extends Controller
 {
