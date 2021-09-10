@@ -45,84 +45,34 @@ class FileManagerControllerTest extends TestCase
         return "user/$userID/files";
     }
 
+    private function createDirStructure(string $dir, array $filenames = [])
+    {
+        $this->MainStorage->makeDirectory($dir);
+
+        foreach ($filenames as $filename) {
+            $file = UploadedFile::fake()->create($filename);
+            $this->MainStorage->putFileAs($dir, $file, $filename);
+        }
+
+        return $this;
+    }
+
     private function initUserRootStructure($userID)
     {
         $root = $this->userRoot($userID);
 
-        $gitignoreFile = UploadedFile::fake()->create('.gitignore');
-        $tsConfigFile = UploadedFile::fake()->create('tsconfig.json');
-        $mainTsFile = UploadedFile::fake()->create('main.js');
-        $timerJsFile = UploadedFile::fake()->create('timer.js');
-        $this->MainStorage->putFileAs($root, $gitignoreFile, '.gitignore');
-        $this->MainStorage->putFileAs($root, $tsConfigFile, 'tsconfig.json');
-        $this->MainStorage->putFileAs($root, $mainTsFile, 'main.js');
-        $this->MainStorage->putFileAs($root, $timerJsFile, 'timer.js');
-
-        $otherDir = "$root/other";
-        $this->MainStorage->makeDirectory($otherDir);
-        $oneTxt = UploadedFile::fake()->create('1.txt');
-        $this->MainStorage->putFileAs($otherDir, $oneTxt, '1.txt');
-
-        $utilsDir = "$root/utils";
-        $this->MainStorage->makeDirectory($utilsDir);
-        $this->MainStorage->makeDirectory("$utilsDir/other");
-        $timerJsFile = UploadedFile::fake()->create('timer.js');
-        $routerJsFile = UploadedFile::fake()->create('router.js');
-        $this->MainStorage->putFileAs($utilsDir, $timerJsFile, 'timer.js');
-        $this->MainStorage->putFileAs($utilsDir, $routerJsFile, 'router.js');
-
-        $srcDir = "$root/src";
-        $this->MainStorage->makeDirectory($srcDir);
-        $mainJsFile = UploadedFile::fake()->create('main.js');
-        $appVueFile = UploadedFile::fake()->create('App.vue');
-        $this->MainStorage->putFileAs($srcDir, $mainJsFile, 'main.js');
-        $this->MainStorage->putFileAs($srcDir, $appVueFile, 'App.vue');
-
-        $utilsDir = "$srcDir/utils";
-        $this->MainStorage->makeDirectory($utilsDir);
-        $this->MainStorage->makeDirectory("$utilsDir/other");
-        $timerJsFile = UploadedFile::fake()->create('timer.js');
-        $routerJsFile = UploadedFile::fake()->create('router.js');
-        $this->MainStorage->putFileAs($utilsDir, $timerJsFile, 'timer.js');
-        $this->MainStorage->putFileAs($utilsDir, $routerJsFile, 'router.js');
-
-        /*
-        directories structure:
-
-        user/{uid}/
-                |
-                ----- src/
-                        |
-                        ----- main.js
-                        |
-                        ----- App.js
-                        |
-                        ----- utils/
-                                    |
-                                    ----- timer.js
-                                    |
-                                    ----- router.js
-                                    |
-                                    ----- other/
-                |
-                ----- .gitignore
-                |
-                ----- tsconfig.json
-                |
-                ----- main.js
-                |
-                ----- timer.js
-                |
-                ----- other/
-                            |
-                            ---1.txt
-                |
-                ----- utils/
-                            |
-                            ----- timer.js
-                            |
-                            ----- router.js
-        */
+        $this->createDirStructure($root, [
+            '.gitignore',
+            'tsconfig.json',
+            'main.js',
+            'timer.js'
+        ])
+            ->createDirStructure("$root/other", ['1.txt'])
+            ->createDirStructure("$root/utils", ['timer.js', 'router.js'])
+            ->createDirStructure("$root/utils/other")
+            ->createDirStructure("$root/src", ['main.js', 'App.vue'])
+            ->createDirStructure("$root/src/utils", ['timer.js', 'router.js'])
+            ->createDirStructure("$root/src/utils/other");
     }
 
     public function test_list_all()
