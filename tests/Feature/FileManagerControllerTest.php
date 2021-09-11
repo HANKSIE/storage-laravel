@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Contracts\FileManager;
+use App\Library\FileManager\Features\Upload;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -489,5 +490,210 @@ class FileManagerControllerTest extends TestCase
                 $json->where('notExists', []);
                 $json->where('selfs', []);
             });
+    }
+
+    public function test_rename()
+    {
+        $userID = $this->User->id;
+
+        $origin = "{$this->root()}/utils";
+        $this->assertTrue($this->MainStorage->exists($origin));
+
+        $res = $this->putJson("api/user/$userID/files/rename", [
+            'dir' => '/',
+            'oldFileName' => 'utils',
+            'newFileName' => 'unique'
+        ]);
+
+        $this->assertFalse($this->MainStorage->exists($origin));
+
+        $res->assertJson(function (AssertableJson $json) {
+            $json->where('exist', false)
+                ->where('isSuccess', true)
+                ->has('fileInfo', function (AssertableJson $json) {
+                    $json->where('name', 'unique')
+                        ->where('mime', 'directory')
+                        ->where('size', '4 items')
+                        ->etc();
+                });
+        });
+    }
+
+    public function test_rename_repeat()
+    {
+        $userID = $this->User->id;
+
+        $origin = "{$this->root()}/utils";
+        $this->assertTrue($this->MainStorage->exists($origin));
+
+        $res = $this->putJson("api/user/$userID/files/rename", [
+            'dir' => '/',
+            'oldFileName' => 'utils',
+            'newFileName' => 'src'
+        ]);
+
+        $this->assertTrue($this->MainStorage->exists($origin));
+        $this->assertTrue($this->MainStorage->exists($origin));
+
+        $res->assertExactJson([
+            'exist' => true,
+            'isSuccess' => false,
+            'fileInfo' => null
+        ]);
+    }
+
+    public function test_download()
+    {
+        $userID = $this->User->id;
+
+        $res = $this->postJson("api/user/$userID/files/download", [
+            'dir' => '/',
+            'filenames' => ['src', 'utils', 'tsconfig.json'],
+        ]);
+
+        $res->assertDownload();
+
+        //TODO Assert whether zip or file path exists
+    }
+
+    public function test_upload()
+    {
+        $files = [
+            '/src/a.txt' => UploadedFile::fake()->create('a.txt'),
+            '/src/b.txt' => UploadedFile::fake()->create('b.txt'),
+            '/other/test.jpg' => UploadedFile::fake()->create('test.jpg'),
+            '/timer.js' => UploadedFile::fake()->create('timer.js'),
+            '/index.html' => UploadedFile::fake()->create('index.html'),
+        ];
+
+        $userID = $this->User->id;
+
+        $uploadSuccessFilepaths = ["{$this->root()}/utils/src", "{$this->root()}/utils/index.html"];
+
+        foreach ($uploadSuccessFilepaths as $path) {
+            $this->assertFalse($this->MainStorage->exists($path));
+        }
+
+        $res = $this->postJson(
+            "api/user/$userID/files/upload",
+            array_merge(
+                [
+                    'dir' => '/utils',
+                    'options' => FileManager::OVERRIDE_NONE,
+                ],
+                $files
+            )
+        );
+
+        $res->assertJson(function (AssertableJson $json) {
+            $json->where('fails', [])
+                ->where('exists', ['other', 'timer.js'])
+                ->has('fileInfos.0', function (AssertableJson $json) {
+                    $json->where('name', 'src')
+                        ->where('mime', 'directory')
+                        ->where('size', '2 items')
+                        ->etc();
+                })
+                ->has('fileInfos.1', function (AssertableJson $json) {
+                    $json->where('name', 'index.html')
+                        ->where('mime', 'text/html')
+                        ->etc();
+                });
+        });
+
+        foreach ($uploadSuccessFilepaths as $path) {
+            $this->assertTrue($this->MainStorage->exists($path));
+        }
+    }
+
+    public function test_upload_keepboth()
+    {
+        $files = [
+            '/other/test.jpg' => UploadedFile::fake()->create('test.jpg'),
+            '/timer.js' => UploadedFile::fake()->create('timer.js'),
+            '/index.html' => UploadedFile::fake()->create('index.html'),
+        ];
+
+        $userID = $this->User->id;
+
+        $uploadSuccessFilepaths = [
+            "{$this->root()}/utils/other copy",
+            "{$this->root()}/utils/index.html",
+            "{$this->root()}/utils/timer copy.js",
+        ];
+
+        foreach ($uploadSuccessFilepaths as $path) {
+            $this->assertFalse($this->MainStorage->exists($path));
+        }
+
+        $res = $this->postJson(
+            "api/user/$userID/files/upload",
+            array_merge(
+                [
+                    'dir' => '/utils',
+                    'options' => FileManager::OVERRIDE_KEEPBOTH,
+                ],
+                $files
+            )
+        );
+
+        $res->assertJson(function (AssertableJson $json) {
+            $json->where('fails', [])
+                ->where('exists', ['other', 'timer.js'])
+                ->has('fileInfos.0', function (AssertableJson $json) {
+                    $json->where('name', 'other copy')
+                        ->where('mime', 'directory')
+                        ->where('size', '1 items')
+                        ->etc();
+                })
+                ->has('fileInfos.1', function (AssertableJson $json) {
+                    $json->where('name', 'timer copy.js')
+                        ->where('mime', 'application/javascript')
+                        ->etc();
+                })
+                ->has('fileInfos.2', function (AssertableJson $json) {
+                    $json->where('name', 'index.html')
+                        ->where('mime', 'text/html')
+                        ->etc();
+                });
+        });
+
+        foreach ($uploadSuccessFilepaths as $path) {
+            $this->assertTrue($this->MainStorage->exists($path));
+        }
+    }
+
+    public function test_upload_replace()
+    {
+        $files = [
+            '/other/1.jpg' => UploadedFile::fake()->create('1.jpg'),
+            '/other/2.jpg' => UploadedFile::fake()->create('2.jpg'),
+            '/other/3.jpg' => UploadedFile::fake()->create('3.jpg'),
+            '/other/4.jpg' => UploadedFile::fake()->create('4.jpg'),
+        ];
+
+        $userID = $this->User->id;
+
+        $res = $this->postJson(
+            "api/user/$userID/files/upload",
+            array_merge(
+                [
+                    'dir' => '/utils',
+                    'options' => FileManager::OVERRIDE_REPLACE,
+                ],
+                $files
+            )
+        );
+
+        $res->assertJson(function (AssertableJson $json) {
+            $json->where('fails', [])
+                ->where('exists', ['other'])
+                ->has('fileInfos.0', function (AssertableJson $json) {
+                    $json->where('name', 'other')
+                        ->where('mime', 'directory')
+                        ->where('size', '4 items')
+                        ->etc();
+                });
+        });
     }
 }
