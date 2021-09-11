@@ -230,7 +230,10 @@ class FileManagerControllerTest extends TestCase
         $dir = "{$this->root()}/unique_dir";
         $this->assertFalse($this->MainStorage->exists($dir));
 
-        $res = $this->postJson("api/user/$userID/files/mkdir", ['filename' => 'unique_dir']);
+        $res = $this->postJson("api/user/$userID/files/mkdir", [
+            'dir' => '/',
+            'filename' => 'unique_dir'
+        ]);
 
         $this->assertTrue($this->MainStorage->exists($dir));
         $res->assertOk()
@@ -254,10 +257,12 @@ class FileManagerControllerTest extends TestCase
     public function test_mkdir_repeat()
     {
         $userID = $this->User->id;
-        $res = $this->postJson("api/user/$userID/files/mkdir", ['filename' => 'src']);
+        $res = $this->postJson("api/user/$userID/files/mkdir", [
+            'dir' => '/',
+            'filename' => 'src'
+        ]);
 
-        $res
-            ->assertOk()
+        $res->assertOk()
             ->assertExactJson([
                 'exist' => true,
                 'isSuccess' => false,

@@ -17,6 +17,10 @@ class AuthenticatedController extends Controller
 
     public function login(LoginRequest $request)
     {
+        $request->validate([
+            'email' => 'required|email|max:255',
+            'password' => 'required|string'
+        ]);
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {

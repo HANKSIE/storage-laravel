@@ -25,6 +25,10 @@ abstract class FileManagerController extends Controller
 
     public function list($id, Request $request)
     {
+        $request->validate([
+            'dir' => 'string|required',
+            'options' => 'numeric'
+        ]);
         $dir = PathHelper::concat($this->root($id), $request->get('dir'));
         $options = $request->get('options');
         return response()->json($this->FileManager->list($dir, $options));
@@ -32,6 +36,10 @@ abstract class FileManagerController extends Controller
 
     public function mkdir($id, Request $request)
     {
+        $request->validate([
+            'dir' => 'string|required',
+            'filename' => 'string|required'
+        ]);
         $dir = PathHelper::concat($this->root($id), $request->get('dir'));
         $filename = $request->get('filename');
         return response()->json($this->FileManager->makeDirectory($dir, $filename));
@@ -39,6 +47,10 @@ abstract class FileManagerController extends Controller
 
     public function remove($id, Request $request)
     {
+        $request->validate([
+            'dir' => 'string|required',
+            'filenames' => 'array|required'
+        ]);
         $dir = PathHelper::concat($this->root($id), $request->get('dir'));
         $filenames = $request->get('filenames');
         return response()->json($this->FileManager->remove($dir, $filenames));
@@ -46,6 +58,12 @@ abstract class FileManagerController extends Controller
 
     public function move($id, Request $request)
     {
+        $request->validate([
+            'fromDir' => 'string|required',
+            'toDir' => 'string|required',
+            'filenames' => 'array|required',
+            'options' => 'numeric'
+        ]);
         $fromDir = PathHelper::concat($this->root($id), $request->get('fromDir'));
         $toDir = PathHelper::concat($this->root($id), $request->get('toDir'));
         $filenames = $request->get('filenames');
@@ -56,6 +74,12 @@ abstract class FileManagerController extends Controller
 
     public function copy($id, Request $request)
     {
+        $request->validate([
+            'fromDir' => 'string|required',
+            'toDir' => 'string|required',
+            'filenames' => 'array|required',
+            'options' => 'numeric'
+        ]);
         $fromDir = PathHelper::concat($this->root($id), $request->get('fromDir'));
         $toDir = PathHelper::concat($this->root($id), $request->get('toDir'));
         $filenames = $request->get('filenames');
@@ -66,6 +90,11 @@ abstract class FileManagerController extends Controller
 
     public function rename($id, Request $request)
     {
+        $request->validate([
+            'dir' => 'string|required',
+            'oldFileName' => 'string|required',
+            'newFileName' => 'string|required',
+        ]);
         $dir = PathHelper::concat($this->root($id), $request->get('dir'));
         $oldFileName = $request->get('oldFileName');
         $newFileName = $request->get('newFileName');
@@ -75,6 +104,10 @@ abstract class FileManagerController extends Controller
 
     public function download($id, Request $request)
     {
+        $request->validate([
+            'dir' => 'string|required',
+            'filenames' => 'array|required'
+        ]);
         $dir = PathHelper::concat($this->root($id), $request->get('dir'));
         $filenames = $request->get('filenames');
         $donwloadResult = $this->FileManager->download($dir, $filenames);
@@ -93,6 +126,10 @@ abstract class FileManagerController extends Controller
 
     public function upload($id, Request $request)
     {
+        $request->validate([
+            'dir' => 'string|required',
+            'options' => 'numeric',
+        ]);
         $dir = PathHelper::concat($this->root($id), $request->get('dir'));
         $files = $request->allFiles();
         $options = $request->get('options');
