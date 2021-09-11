@@ -45,13 +45,18 @@ class FileManagerControllerTest extends TestCase
         return "user/$userID/files";
     }
 
-    private function createDirStructure(string $dir, array $filenames = [])
+    private function createDirStructure(string $root = '/', array $struct)
     {
-        $this->MainStorage->makeDirectory($dir);
+        $this->MainStorage->makeDirectory($root);
 
-        foreach ($filenames as $filename) {
-            $file = UploadedFile::fake()->create($filename);
-            $this->MainStorage->putFileAs($dir, $file, $filename);
+        foreach ($struct as $k => $v) {
+            if (is_array($v)) {
+                $dir = "$root/$k";
+                $this->createDirStructure($dir, $v);
+            } else {
+                $file = UploadedFile::fake()->create($v);
+                $this->MainStorage->putFileAs($root, $file, $v);
+            }
         }
 
         return $this;
@@ -61,18 +66,25 @@ class FileManagerControllerTest extends TestCase
     {
         $root = $this->userRoot($userID);
 
-        $this->createDirStructure($root, [
-            '.gitignore',
-            'tsconfig.json',
-            'main.js',
-            'timer.js'
-        ])
-            ->createDirStructure("$root/other", ['1.txt'])
-            ->createDirStructure("$root/utils", ['timer.js', 'router.js'])
-            ->createDirStructure("$root/utils/other")
-            ->createDirStructure("$root/src", ['main.js', 'App.vue'])
-            ->createDirStructure("$root/src/utils", ['timer.js', 'router.js'])
-            ->createDirStructure("$root/src/utils/other");
+        $this->createDirStructure(
+            $root,
+            [
+                'other' => ['1.txt'],
+                'src' => [
+                    'utils' => [
+                        'other' => [],
+                        'router.js',
+                        'timer.js',
+                    ],
+                    'App.vue',
+                    'main.js',
+                ],
+                '.gitignore',
+                'main.js',
+                'timer.js',
+                'tsconfig.json',
+            ]
+        );
     }
 
     public function test_list_all()
@@ -83,7 +95,6 @@ class FileManagerControllerTest extends TestCase
             'dir' => '/',
             'options' => FileManager::LIST_ALL
         ]);
-
         $res->assertOk()
             ->assertJsonStructure(
                 [
@@ -91,7 +102,7 @@ class FileManagerControllerTest extends TestCase
                         '*' => ['name', 'mime', 'lastModified', 'size']
                     ]
                 ]
-            )->assertJsonCount(7, 'fileInfos')
+            )->assertJsonCount(6, 'fileInfos')
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
                     $json
@@ -109,30 +120,23 @@ class FileManagerControllerTest extends TestCase
                 });
                 $json->has('fileInfos.2', function (AssertableJson $json) {
                     $json
-                        ->where('name', 'utils')
-                        ->where('mime', 'directory')
-                        ->where('size', '3 items')
-                        ->etc();
-                });
-                $json->has('fileInfos.3', function (AssertableJson $json) {
-                    $json
                         ->where('name', '.gitignore')
                         ->where('mime', 'text/plain')
                         ->etc();
                 });
-                $json->has('fileInfos.4', function (AssertableJson $json) {
+                $json->has('fileInfos.3', function (AssertableJson $json) {
                     $json
                         ->where('name', 'main.js')
                         ->where('mime', 'application/javascript')
                         ->etc();
                 });
-                $json->has('fileInfos.5', function (AssertableJson $json) {
+                $json->has('fileInfos.4', function (AssertableJson $json) {
                     $json
                         ->where('name', 'timer.js')
                         ->where('mime', 'application/javascript')
                         ->etc();
                 });
-                $json->has('fileInfos.6', function (AssertableJson $json) {
+                $json->has('fileInfos.5', function (AssertableJson $json) {
                     $json
                         ->where('name', 'tsconfig.json')
                         ->where('mime', 'application/json')
@@ -151,7 +155,7 @@ class FileManagerControllerTest extends TestCase
         ]);
 
         $res->assertOk()
-            ->assertJsonCount(3, 'fileInfos')
+            ->assertJsonCount(2, 'fileInfos')
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
                     $json
@@ -163,13 +167,6 @@ class FileManagerControllerTest extends TestCase
                 $json->has('fileInfos.1', function (AssertableJson $json) {
                     $json
                         ->where('name', 'src')
-                        ->where('mime', 'directory')
-                        ->where('size', '3 items')
-                        ->etc();
-                });
-                $json->has('fileInfos.2', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'utils')
                         ->where('mime', 'directory')
                         ->where('size', '3 items')
                         ->etc();
