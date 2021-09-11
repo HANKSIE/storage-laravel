@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Contracts\FileManager;
-use App\Library\FileManager\Features\Upload;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -116,43 +115,43 @@ class FileManagerControllerTest extends TestCase
             )
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'src')
-                        ->where('mime', 'directory')
-                        ->where('size', '3 items')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'src',
+                        'mime' => 'directory',
+                        'size' => '3 items'
+                    ])->etc();
                 });
 
                 $json->has('fileInfos.1', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'utils')
-                        ->where('mime', 'directory')
-                        ->where('size', '4 items')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'utils',
+                        'mime' => 'directory',
+                        'size' => '4 items'
+                    ])->etc();
                 });
                 $json->has('fileInfos.2', function (AssertableJson $json) {
-                    $json
-                        ->where('name', '.gitignore')
-                        ->where('mime', 'text/plain')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => '.gitignore',
+                        'mime' => 'text/plain'
+                    ])->etc();
                 });
                 $json->has('fileInfos.3', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'main.js')
-                        ->where('mime', 'application/javascript')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'main.js',
+                        'mime' => 'application/javascript'
+                    ])->etc();
                 });
                 $json->has('fileInfos.4', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'timer.js')
-                        ->where('mime', 'application/javascript')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'timer.js',
+                        'mime' => 'application/javascript'
+                    ])->etc();
                 });
                 $json->has('fileInfos.5', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'tsconfig.json')
-                        ->where('mime', 'application/json')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'tsconfig.json',
+                        'mime' => 'application/json'
+                    ])->etc();
                 });
             });
     }
@@ -169,18 +168,18 @@ class FileManagerControllerTest extends TestCase
         $res->assertOk()
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'src')
-                        ->where('mime', 'directory')
-                        ->where('size', '3 items')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'src',
+                        'mime' => 'directory',
+                        'size' => '3 items'
+                    ])->etc();
                 });
                 $json->has('fileInfos.1', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'utils')
-                        ->where('mime', 'directory')
-                        ->where('size', '4 items')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'utils',
+                        'mime' => 'directory',
+                        'size' => '4 items'
+                    ])->etc();
                 });
             });
     }
@@ -199,28 +198,28 @@ class FileManagerControllerTest extends TestCase
             ->assertJson(function (AssertableJson $json) {
 
                 $json->has('fileInfos.0', function (AssertableJson $json) {
-                    $json
-                        ->where('name', '.gitignore')
-                        ->where('mime', 'text/plain')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => '.gitignore',
+                        'mime' => 'text/plain'
+                    ])->etc();
                 });
                 $json->has('fileInfos.1', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'main.js')
-                        ->where('mime', 'application/javascript')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'main.js',
+                        'mime' => 'application/javascript'
+                    ])->etc();
                 });
                 $json->has('fileInfos.2', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'timer.js')
-                        ->where('mime', 'application/javascript')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'timer.js',
+                        'mime' => 'application/javascript'
+                    ])->etc();
                 });
                 $json->has('fileInfos.3', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'tsconfig.json')
-                        ->where('mime', 'application/json')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'tsconfig.json',
+                        'mime' => 'application/json'
+                    ])->etc();
                 });
             });
     }
@@ -240,13 +239,14 @@ class FileManagerControllerTest extends TestCase
                 'isSuccess',
                 'fileInfo'
             ])->assertJson(function (AssertableJson $json) {
-                $json->where('exist', false)
-                    ->where('isSuccess', true);
-                $json->has('fileInfo', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'unique_dir')
-                        ->where('mime', 'directory')
-                        ->etc();
+                $json->whereAll([
+                    'exist' => false,
+                    'isSuccess' => true
+                ])->has('fileInfo', function (AssertableJson $json) {
+                    $json->whereAll([
+                        'name' => 'unique_dir',
+                        'mime' => 'directory'
+                    ])->etc();
                 });
             });
     }
@@ -307,14 +307,15 @@ class FileManagerControllerTest extends TestCase
         $res->assertOk()
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'tsconfig.json')
-                        ->where('mime', 'application/json')
-                        ->etc();
-                });
-                $json->where('exists', ['timer.js']);
-                $json->where('notExists', ['notExist']);
-                $json->where('selfs', ['src']);
+                    $json->whereAll([
+                        'name' => 'tsconfig.json',
+                        'mime' => 'application/json'
+                    ])->etc();
+                })->whereAll([
+                    'exists' => ['timer.js'],
+                    'notExists' => ['notExist'],
+                    'selfs' => ['src']
+                ]);
             });
     }
 
@@ -337,14 +338,15 @@ class FileManagerControllerTest extends TestCase
         $res->assertOk()
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'timer copy.js')
-                        ->where('mime', 'application/javascript')
-                        ->etc();
-                });
-                $json->where('exists', ['timer.js']);
-                $json->where('notExists', []);
-                $json->where('selfs', []);
+                    $json->whereAll([
+                        'name' => 'timer copy.js',
+                        'mime' => 'application/javascript'
+                    ])->etc();
+                })->whereAll([
+                    'exists' => ['timer.js'],
+                    'notExists' => [],
+                    'selfs' => []
+                ]);
             });
     }
 
@@ -379,14 +381,15 @@ class FileManagerControllerTest extends TestCase
         $res->assertOk()
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'other')
-                        ->where('size', '1 items')
-                        ->etc();
-                });
-                $json->where('exists', ['other']);
-                $json->where('notExists', []);
-                $json->where('selfs', []);
+                    $json->whereAll([
+                        'name' => 'other',
+                        'size' => '1 items'
+                    ])->etc();
+                })->whereAll([
+                    'exists' => ['other'],
+                    'notExists' => [],
+                    'selfs' => []
+                ]);
             });
     }
 
@@ -408,14 +411,15 @@ class FileManagerControllerTest extends TestCase
         $res->assertOk()
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'tsconfig.json')
-                        ->where('mime', 'application/json')
-                        ->etc();
-                });
-                $json->where('exists', ['timer.js']);
-                $json->where('notExists', ['notExist']);
-                $json->where('selfs', ['src']);
+                    $json->whereAll([
+                        'name' => 'tsconfig.json',
+                        'mime' => 'application/json'
+                    ])->etc();
+                })->whereAll([
+                    'exists' => ['timer.js'],
+                    'notExists' => ['notExist'],
+                    'selfs' => ['src']
+                ]);
             });
     }
 
@@ -437,14 +441,15 @@ class FileManagerControllerTest extends TestCase
         $res->assertOk()
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'timer copy.js')
-                        ->where('mime', 'application/javascript')
-                        ->etc();
-                });
-                $json->where('exists', ['timer.js']);
-                $json->where('notExists', []);
-                $json->where('selfs', []);
+                    $json->whereAll([
+                        'name' => 'timer copy.js',
+                        'mime' => 'application/javascript'
+                    ])->etc();
+                })->whereAll([
+                    'exists' => ['timer.js'],
+                    'notExists' => [],
+                    'selfs' => []
+                ]);
             });
     }
 
@@ -481,14 +486,15 @@ class FileManagerControllerTest extends TestCase
         $res->assertOk()
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'other')
-                        ->where('size', '1 items')
-                        ->etc();
-                });
-                $json->where('exists', ['other']);
-                $json->where('notExists', []);
-                $json->where('selfs', []);
+                    $json->whereAll([
+                        'name' => 'other',
+                        'size' => '1 items'
+                    ])->etc();
+                })->whereAll([
+                    'exists' => ['other'],
+                    'notExists' => [],
+                    'selfs' => []
+                ]);
             });
     }
 
@@ -508,14 +514,16 @@ class FileManagerControllerTest extends TestCase
         $this->assertFalse($this->MainStorage->exists($origin));
 
         $res->assertJson(function (AssertableJson $json) {
-            $json->where('exist', false)
-                ->where('isSuccess', true)
-                ->has('fileInfo', function (AssertableJson $json) {
-                    $json->where('name', 'unique')
-                        ->where('mime', 'directory')
-                        ->where('size', '4 items')
-                        ->etc();
-                });
+            $json->whereAll([
+                'exist' => false,
+                'isSuccess' => true
+            ])->has('fileInfo', function (AssertableJson $json) {
+                $json->whereAll([
+                    'name' => 'unique',
+                    'mime' => 'directory',
+                    'size' => '4 items'
+                ])->etc();
+            });
         });
     }
 
@@ -586,18 +594,21 @@ class FileManagerControllerTest extends TestCase
         );
 
         $res->assertJson(function (AssertableJson $json) {
-            $json->where('fails', [])
-                ->where('exists', ['other', 'timer.js'])
-                ->has('fileInfos.0', function (AssertableJson $json) {
-                    $json->where('name', 'src')
-                        ->where('mime', 'directory')
-                        ->where('size', '2 items')
-                        ->etc();
-                })
+            $json->whereAll([
+                'fails' => [],
+                'exists' => ['other', 'timer.js']
+            ])->has('fileInfos.0', function (AssertableJson $json) {
+                $json->whereAll([
+                    'name' => 'src',
+                    'mime' => 'directory',
+                    'size' => '2 items'
+                ])->etc();
+            })
                 ->has('fileInfos.1', function (AssertableJson $json) {
-                    $json->where('name', 'index.html')
-                        ->where('mime', 'text/html')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'index.html',
+                        'mime' => 'text/html'
+                    ])->etc();
                 });
         });
 
@@ -638,23 +649,27 @@ class FileManagerControllerTest extends TestCase
         );
 
         $res->assertJson(function (AssertableJson $json) {
-            $json->where('fails', [])
-                ->where('exists', ['other', 'timer.js'])
-                ->has('fileInfos.0', function (AssertableJson $json) {
-                    $json->where('name', 'other copy')
-                        ->where('mime', 'directory')
-                        ->where('size', '1 items')
-                        ->etc();
-                })
+            $json->whereAll([
+                'fails' => [],
+                'exists' => ['other', 'timer.js']
+            ])->has('fileInfos.0', function (AssertableJson $json) {
+                $json->whereAll([
+                    'name' => 'other copy',
+                    'mime' => 'directory',
+                    'size' => '1 items'
+                ])->etc();
+            })
                 ->has('fileInfos.1', function (AssertableJson $json) {
-                    $json->where('name', 'timer copy.js')
-                        ->where('mime', 'application/javascript')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'timer copy.js',
+                        'mime' => 'application/javascript'
+                    ])->etc();
                 })
                 ->has('fileInfos.2', function (AssertableJson $json) {
-                    $json->where('name', 'index.html')
-                        ->where('mime', 'text/html')
-                        ->etc();
+                    $json->whereAll([
+                        'name' => 'index.html',
+                        'mime' => 'text/html'
+                    ])->etc();
                 });
         });
 
@@ -686,14 +701,16 @@ class FileManagerControllerTest extends TestCase
         );
 
         $res->assertJson(function (AssertableJson $json) {
-            $json->where('fails', [])
-                ->where('exists', ['other'])
-                ->has('fileInfos.0', function (AssertableJson $json) {
-                    $json->where('name', 'other')
-                        ->where('mime', 'directory')
-                        ->where('size', '4 items')
-                        ->etc();
-                });
+            $json->whereAll([
+                'fails' => [],
+                'exists' => ['other']
+            ])->has('fileInfos.0', function (AssertableJson $json) {
+                $json->whereAll([
+                    'name' => 'other',
+                    'mime' => 'directory',
+                    'size' => '4 items'
+                ])->etc();
+            });
         });
     }
 }
