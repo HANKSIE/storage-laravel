@@ -58,8 +58,12 @@ class FileManagerControllerTest extends TestCase
                 $this->MainStorage->putFileAs($root, $file, $v);
             }
         }
+    }
 
-        return $this;
+    private function root()
+    {
+        $userID = $this->User->id;
+        return "user/$userID/files";
     }
 
     private function initUserRootStructure($userID)
@@ -69,7 +73,12 @@ class FileManagerControllerTest extends TestCase
         $this->createDirStructure(
             $root,
             [
-                'other' => ['1.txt'],
+                'utils' => [
+                    'other' => ['1.txt'],
+                    'router.js',
+                    'timer.js',
+                    'unique'
+                ],
                 'src' => [
                     'utils' => [
                         'other' => [],
@@ -95,6 +104,7 @@ class FileManagerControllerTest extends TestCase
             'dir' => '/',
             'options' => FileManager::LIST_ALL
         ]);
+
         $res->assertOk()
             ->assertJsonStructure(
                 [
@@ -102,20 +112,21 @@ class FileManagerControllerTest extends TestCase
                         '*' => ['name', 'mime', 'lastModified', 'size']
                     ]
                 ]
-            )->assertJsonCount(6, 'fileInfos')
+            )
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'other')
-                        ->where('mime', 'directory')
-                        ->where('size', '1 items')
-                        ->etc();
-                });
-                $json->has('fileInfos.1', function (AssertableJson $json) {
                     $json
                         ->where('name', 'src')
                         ->where('mime', 'directory')
                         ->where('size', '3 items')
+                        ->etc();
+                });
+
+                $json->has('fileInfos.1', function (AssertableJson $json) {
+                    $json
+                        ->where('name', 'utils')
+                        ->where('mime', 'directory')
+                        ->where('size', '4 items')
                         ->etc();
                 });
                 $json->has('fileInfos.2', function (AssertableJson $json) {
@@ -155,20 +166,19 @@ class FileManagerControllerTest extends TestCase
         ]);
 
         $res->assertOk()
-            ->assertJsonCount(2, 'fileInfos')
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
-                    $json
-                        ->where('name', 'other')
-                        ->where('mime', 'directory')
-                        ->where('size', '1 items')
-                        ->etc();
-                });
-                $json->has('fileInfos.1', function (AssertableJson $json) {
                     $json
                         ->where('name', 'src')
                         ->where('mime', 'directory')
                         ->where('size', '3 items')
+                        ->etc();
+                });
+                $json->has('fileInfos.1', function (AssertableJson $json) {
+                    $json
+                        ->where('name', 'utils')
+                        ->where('mime', 'directory')
+                        ->where('size', '4 items')
                         ->etc();
                 });
             });
@@ -217,10 +227,13 @@ class FileManagerControllerTest extends TestCase
     public function test_mkdir()
     {
         $userID = $this->User->id;
+        $dir = "{$this->root()}/unique_dir";
+        $this->assertFalse($this->MainStorage->exists($dir));
+
         $res = $this->postJson("api/user/$userID/files/mkdir", ['filename' => 'unique_dir']);
 
-        $res
-            ->assertOk()
+        $this->assertTrue($this->MainStorage->exists($dir));
+        $res->assertOk()
             ->assertJsonStructure([
                 'exist',
                 'isSuccess',
@@ -254,10 +267,17 @@ class FileManagerControllerTest extends TestCase
     public function test_remove()
     {
         $userID = $this->User->id;
+        $target = "{$this->root()}/tsconfig.json";
+
+        $this->assertTrue($this->MainStorage->exists($target));
+
         $res = $this->deleteJson("api/user/$userID/files/remove", [
             'dir' => '/',
             'filenames' => ['src', 'tsconfig.json', 'notExistFile.txt', 'notExistDir'],
         ]);
+
+        $this->assertFalse($this->MainStorage->exists($target));
+
         $res->assertOk()
             ->assertExactJson([
                 'successes' => ['src', 'tsconfig.json'],
@@ -269,12 +289,19 @@ class FileManagerControllerTest extends TestCase
     public function test_move()
     {
         $userID = $this->User->id;
+
+        $origin = "{$this->root()}/tsconfig.json";
+
+        $this->assertTrue($this->MainStorage->exists($origin));
+
         $res = $this->putJson("api/user/$userID/files/move", [
             'fromDir' => '/',
             'toDir' => '/src/utils',
             'filenames' => ['src', 'timer.js', 'notExist', 'tsconfig.json'],
             'options' => FileManager::OVERRIDE_NONE
         ]);
+
+        $this->assertFalse($this->MainStorage->exists($origin));
 
         $res->assertOk()
             ->assertJson(function (AssertableJson $json) {
@@ -293,12 +320,19 @@ class FileManagerControllerTest extends TestCase
     public function test_move_keepboth()
     {
         $userID = $this->User->id;
+        $origin = "{$this->root()}/timer.js";
+
+        $this->assertTrue($this->MainStorage->exists($origin));
+
         $res = $this->putJson("api/user/$userID/files/move", [
             'fromDir' => '/',
             'toDir' => '/src/utils',
             'filenames' => ['timer.js'],
             'options' => FileManager::OVERRIDE_KEEPBOTH
         ]);
+
+        $this->assertFalse($this->MainStorage->exists($origin));
+
         $res->assertOk()
             ->assertJson(function (AssertableJson $json) {
                 $json->has('fileInfos.0', function (AssertableJson $json) {
@@ -316,12 +350,132 @@ class FileManagerControllerTest extends TestCase
     public function test_move_replace()
     {
         $userID = $this->User->id;
+
+        $dest = "{$this->root()}/src/utils/other";
+        $origin = "{$this->root()}/utils/other";
+
+        $this->assertTrue($this->MainStorage->exists($dest));
+        $this->assertEquals(
+            collect(
+                $this->MainStorage->directories($dest)
+            )->concat(
+                collect(
+                    $this->MainStorage->files($dest)
+                )
+            )->count(),
+            0
+        );
+
         $res = $this->putJson("api/user/$userID/files/move", [
-            'fromDir' => '/',
+            'fromDir' => '/utils',
             'toDir' => '/src/utils',
             'filenames' => ['other'],
             'options' => FileManager::OVERRIDE_REPLACE
         ]);
+
+        $this->assertFalse($this->MainStorage->exists($origin));
+
+        $res->assertOk()
+            ->assertJson(function (AssertableJson $json) {
+                $json->has('fileInfos.0', function (AssertableJson $json) {
+                    $json
+                        ->where('name', 'other')
+                        ->where('size', '1 items')
+                        ->etc();
+                });
+                $json->where('exists', ['other']);
+                $json->where('notExists', []);
+                $json->where('selfs', []);
+            });
+    }
+
+    public function test_copy()
+    {
+        $userID = $this->User->id;
+        $origin = "{$this->root()}/timer.js";
+        $this->assertTrue($this->MainStorage->exists($origin));
+
+        $res = $this->postJson("api/user/$userID/files/copy", [
+            'fromDir' => '/',
+            'toDir' => '/src/utils',
+            'filenames' => ['src', 'timer.js', 'notExist', 'tsconfig.json'],
+            'options' => FileManager::OVERRIDE_NONE
+        ]);
+
+        $this->assertTrue($this->MainStorage->exists($origin));
+
+        $res->assertOk()
+            ->assertJson(function (AssertableJson $json) {
+                $json->has('fileInfos.0', function (AssertableJson $json) {
+                    $json
+                        ->where('name', 'tsconfig.json')
+                        ->where('mime', 'application/json')
+                        ->etc();
+                });
+                $json->where('exists', ['timer.js']);
+                $json->where('notExists', ['notExist']);
+                $json->where('selfs', ['src']);
+            });
+    }
+
+    public function test_copy_keepboth()
+    {
+        $userID = $this->User->id;
+        $origin = "{$this->root()}/timer.js";
+        $this->assertTrue($this->MainStorage->exists($origin));
+
+        $res = $this->postJson("api/user/$userID/files/copy", [
+            'fromDir' => '/',
+            'toDir' => '/src/utils',
+            'filenames' => ['timer.js'],
+            'options' => FileManager::OVERRIDE_KEEPBOTH
+        ]);
+
+        $this->assertTrue($this->MainStorage->exists($origin));
+        $this->assertTrue($this->MainStorage->exists($origin));
+        $res->assertOk()
+            ->assertJson(function (AssertableJson $json) {
+                $json->has('fileInfos.0', function (AssertableJson $json) {
+                    $json
+                        ->where('name', 'timer copy.js')
+                        ->where('mime', 'application/javascript')
+                        ->etc();
+                });
+                $json->where('exists', ['timer.js']);
+                $json->where('notExists', []);
+                $json->where('selfs', []);
+            });
+    }
+
+    public function test_copy_replace()
+    {
+        $userID = $this->User->id;
+
+        $dest = "{$this->root()}/src/utils/other";
+        $origin = "{$this->root()}/utils/other";
+
+        $this->assertTrue($this->MainStorage->exists($origin));
+        $this->assertTrue($this->MainStorage->exists($dest));
+        $this->assertEquals(
+            collect(
+                $this->MainStorage->directories($dest)
+            )->concat(
+                collect(
+                    $this->MainStorage->files($dest)
+                )
+            )->count(),
+            0
+        );
+
+        $res = $this->postJson("api/user/$userID/files/copy", [
+            'fromDir' => '/utils',
+            'toDir' => '/src/utils',
+            'filenames' => ['other'],
+            'options' => FileManager::OVERRIDE_REPLACE
+        ]);
+
+        $this->assertTrue($this->MainStorage->exists($origin));
+        $this->assertTrue($this->MainStorage->exists($dest));
 
         $res->assertOk()
             ->assertJson(function (AssertableJson $json) {
