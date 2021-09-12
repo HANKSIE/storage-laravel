@@ -14,7 +14,7 @@ class PathHelper
 
     public static function dirname($path)
     {
-        return dirname($path);
+        return dirname(self::format($path));
     }
 
     public static function basename($path)
@@ -30,7 +30,7 @@ class PathHelper
     {
         $path = Str::of(self::format($path));
         if (!$path->contains('/')) {
-            return $path;
+            return (string)$path;
         }
 
         $firstCh = ((string)$path)[0];
