@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Helpers\UrlHelper;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;

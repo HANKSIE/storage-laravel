@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class AuthenticatedControllerTest extends TestCase
 {
@@ -79,4 +80,36 @@ class AuthenticatedControllerTest extends TestCase
     //         ]
     //     );
     // }
+
+    public function test_register()
+    {
+        $userData = [
+            'name' => 'someone',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'email' => 'someone@gmail.com'
+        ];
+        $this->assertDatabaseMissing('users', ['email' => $userData['email']]);
+
+        $this->postJson('api/register', $userData)->assertOk();
+
+        $this->assertDatabaseHas('users', ['email' => $userData['email']]);
+    }
+
+    public function test_user()
+    {
+        $User = User::factory()->create();
+        $this->actingAs($User);
+        $res = $this->getJson('api/user');
+
+        $res->assertOk()->assertJson(function (AssertableJson $json) use ($User) {
+            $json->has('user', function (AssertableJson $json) use ($User) {
+                $json->whereAll([
+                    'id' => $User->id,
+                    'name' => $User->name,
+                    'email' => $User->email
+                ])->etc();
+            });
+        });
+    }
 }
