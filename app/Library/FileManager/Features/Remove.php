@@ -12,17 +12,13 @@ class Remove extends Feature
     {
         list($dir, $filenames) = $args;
 
-        $filepaths = collect($filenames)->map(function ($filename) use ($dir) {
-            return PathHelper::concat($dir, $filename);
-        });
-
         $removeFails = collect();
         $removeSuccesses = collect();
         $notExists = collect();
 
-        $filepaths->each(function ($filepath) use ($removeFails, $removeSuccesses, $notExists) {
+        collect($filenames)->each(function ($filename) use ($dir, $removeFails, $removeSuccesses, $notExists) {
+            $filepath = PathHelper::concat($dir, $filename);
             $isSuccess = false;
-
             if ($this->Storage->exists($filepath)) {
                 if ($this->Helper->isDirectory($filepath)) {
                     $isSuccess = $this->Storage->deleteDirectory($filepath);
@@ -31,12 +27,12 @@ class Remove extends Feature
                 }
 
                 if (!$isSuccess) {
-                    $removeFails->push(PathHelper::basename($filepath));
+                    $removeFails->push($filename);
                 } else {
-                    $removeSuccesses->push(PathHelper::basename($filepath));
+                    $removeSuccesses->push($filename);
                 }
             } else {
-                $notExists->push($filepath);
+                $notExists->push($filename);
             }
         });
 

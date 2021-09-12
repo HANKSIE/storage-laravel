@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         Schema::disableForeignKeyConstraints();
         User::truncate();
-        DB::table()->truncate('personal_access_tokens');
+        DB::table('personal_access_tokens')->truncate();
 
         $this->call([
             UserSeeder::class,

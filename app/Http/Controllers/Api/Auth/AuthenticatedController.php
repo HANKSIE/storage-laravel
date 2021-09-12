@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
-use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
@@ -15,15 +15,12 @@ class AuthenticatedController extends Controller
     private $tokenName = 'token';
     private $bearTokenPrefix = 'Bearer ';
 
-    private $AuthService;
-
-    public function __construct(AuthService $AuthService)
-    {
-        $this->AuthService = $AuthService;
-    }
-
     public function login(LoginRequest $request)
     {
+        $request->validate([
+            'email' => 'required|email|max:255',
+            'password' => 'required|string'
+        ]);
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -47,7 +44,7 @@ class AuthenticatedController extends Controller
 
     public function user()
     {
-        return response()->json(['user' => auth()->user()], Response::HTTP_OK);
+        return response()->json(['user' => new UserResource(auth()->user())], Response::HTTP_OK);
     }
 
     public function register(Request $request)
@@ -58,7 +55,9 @@ class AuthenticatedController extends Controller
             'password' => 'required|string|confirmed'
         ]);
 
-        $this->AuthService->register($request->all(), $request->file('avatar'));
+        $data = $request->all();
+        $data['password'] = Hash::make($data['password']);
+        User::create($data);
         return response(null, Response::HTTP_OK);
     }
 }

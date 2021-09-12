@@ -85,8 +85,8 @@ class Upload extends Feature
         });
 
         return [
-            'fails' => $fails,
-            'exists' => $exists,
+            'fails' => $fails->values(),
+            'exists' => $exists->values(),
             'fileInfos' => $this->Helper->fileInfo($rootFilePaths),
         ];
     }
