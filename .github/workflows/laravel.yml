@@ -1,4 +1,4 @@
-name: Laravel ci
+name: Laravel ci/cd
 
 on:
   push:
@@ -47,7 +47,9 @@ jobs:
         heroku_email: "kkuuccff@gmail.com"
         justlogin: true
     - name: deploy to heroku
+      env:
+        HEROKU_APP_NAME: ${{secrets.HEROKU_APP_NAME}}
       run: |
         git config --global user.email "kkuuccff@gmail.com"
         git config --global user.name "HANKSIE"
-        heroku git:remote -a storage-box-api
+        heroku git:remote -a $HEROKU_APP_NAME
