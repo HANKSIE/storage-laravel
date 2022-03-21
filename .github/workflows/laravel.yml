@@ -44,9 +44,11 @@ jobs:
       with:
         heroku_api_key: ${{secrets.HEROKU_API_KEY}}
         heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
-        heroku_email: ${{secrets.HEROKU_EMAIL}}
+        heroku_email: "kkuuccff@gmail.com"
         justlogin: true
     - name: push
       run: |
+        git config --global user.email "kkuuccff@gmail.com"
+        git config --global user.name "HANKSIE"
         git commit -m "initial commit"
         git push heroku main
