@@ -48,7 +48,7 @@ jobs:
         justlogin: true
     - name: deploy to heroku
       env:
-        HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+        HEROKU_APP_NAME: '${{ secrets.HEROKU_APP_NAME }}'
       run: |
         git config --global user.email "kkuuccff@gmail.com"
         git config --global user.name "HANKSIE"
