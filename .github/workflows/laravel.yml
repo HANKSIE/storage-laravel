@@ -2,9 +2,9 @@ name: Laravel ci
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   test:
@@ -40,7 +40,6 @@ jobs:
     needs: test
     steps:
     - uses: actions/checkout@v2
-    - name: Deploy to heroku
     - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
       with:
         heroku_api_key: ${{secrets.HEROKU_API_KEY}}
