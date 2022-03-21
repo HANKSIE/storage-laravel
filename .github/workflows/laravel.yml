@@ -50,5 +50,6 @@ jobs:
       run: |
         git config --global user.email "kkuuccff@gmail.com"
         git config --global user.name "HANKSIE"
+        git add --all
         git commit -m "initial commit"
         git push heroku main
