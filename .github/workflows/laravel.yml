@@ -50,4 +50,4 @@ jobs:
       run: |
         git config --global user.email "kkuuccff@gmail.com"
         git config --global user.name "HANKSIE"
-        git push heroku main --force
+        git push heroku master --force
