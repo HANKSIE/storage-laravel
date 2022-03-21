@@ -47,4 +47,6 @@ jobs:
         heroku_email: ${{secrets.HEROKU_EMAIL}}
         justlogin: true
     - name: push
-      run: git push heroku main
+      run: |
+        git commit -m "initial commit"
+        git push heroku main
