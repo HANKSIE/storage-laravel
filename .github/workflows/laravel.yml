@@ -7,12 +7,6 @@ on:
     branches: [ main ]
 
 jobs:
-  echo:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: echo app name
-      run: echo ${{secrets.HEROKU_APP_NAME}}
   test:
 
     runs-on: ubuntu-latest
