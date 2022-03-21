@@ -1,4 +1,4 @@
-name: Laravel ci
+name: Laravel ci/cd
 
 on:
   push:
@@ -44,4 +44,12 @@ jobs:
       with:
         heroku_api_key: ${{secrets.HEROKU_API_KEY}}
         heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
-        heroku_email: ${{secrets.HEROKU_EMAIL}}
+        heroku_email: "kkuuccff@gmail.com"
+        justlogin: true
+    - shell: bash
+      env:
+        HEROKU_APP_NAME: ${{secrets.HEROKU_APP_NAME}}
+      run: |
+        git config --global user.email "kkuuccff@gmail.com"
+        git config --global user.name "HANKSIE"
+        heroku git:remote -a "$HEROKU_APP_NAME"
