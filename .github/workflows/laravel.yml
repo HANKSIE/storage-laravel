@@ -46,7 +46,7 @@ jobs:
         heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
         heroku_email: "kkuuccff@gmail.com"
         justlogin: true
-    - name: deploy to heroku
+    - shell: bash
       env:
         HEROKU_APP_NAME: ${{secrets.HEROKU_APP_NAME}}
       run: |
