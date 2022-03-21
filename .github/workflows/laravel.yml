@@ -50,4 +50,4 @@ jobs:
       run: |
         git config --global user.email "kkuuccff@gmail.com"
         git config --global user.name "HANKSIE"
-        heroku git:remote -a ${{secrets.HEROKU_APP_NAME}}
+        heroku git:remote -a "${{secrets.HEROKU_APP_NAME}}"
